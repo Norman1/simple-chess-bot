@@ -2,6 +2,7 @@ package com.nghood.simplechess.model;
 
 
 import lombok.Data;
+import reactor.util.function.Tuple2;
 
 import static com.nghood.simplechess.model.Piece.*;
 
@@ -10,21 +11,23 @@ import static com.nghood.simplechess.model.Piece.*;
  */
 @Data
 public class BoardState {
-    /*
-    *
-     */
     private int turn;
     private boolean isWhitePlayerMove;
+    private boolean isWhiteKingMoved;
+    private boolean isBlackKingMoved;
+    private boolean isLeftWhiteRookMoved;
+    private boolean isRightWhiteRookMoved;
+    private boolean isLeftBlackRookMoved;
+    private boolean isRightBlackRookMoved;
+    private Tuple2<Integer,Integer> enPassantVulnerablePawn = null;
 
 
 
     /*
     * a11 is 0-0
-    *
+    * first rows then columns
      */
     private Piece[][] chessBoard;
-
-
 
     public  void setupInitialBoard(){
         Piece[][] initialBoard ={ {WHITE_ROOK,WHITE_KNIGHT,WHITE_BISHOP,WHITE_QUEEN,WHITE_KING,WHITE_BISHOP,WHITE_KNIGHT,WHITE_ROOK},
@@ -36,7 +39,14 @@ public class BoardState {
         {BLACK_PAWN,BLACK_PAWN,BLACK_PAWN,BLACK_PAWN,BLACK_PAWN,BLACK_PAWN,BLACK_PAWN,BLACK_PAWN},
         {BLACK_ROOK,BLACK_KNIGHT,BLACK_BISHOP,BLACK_QUEEN,BLACK_KING,BLACK_BISHOP,BLACK_KNIGHT,BLACK_ROOK} };
 
+        turn = 1;
+        isWhitePlayerMove = true;
        chessBoard = initialBoard;
+    }
+
+    public BoardState getCopy(){
+        BoardState copy = null;
+        return copy;
     }
 
 

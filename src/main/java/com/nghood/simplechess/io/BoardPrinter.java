@@ -16,51 +16,51 @@ public class BoardPrinter {
             System.out.println();
 
         }
-       // System.out.println("---------------------");
-        System.out.println("   a  b  c  d  e  f  g  h");
+
+        System.out.println("   a\u0020  b\u0020 c\u0020  d\u0020  e  f   g \u0020h");
     }
 
     private String getStringRepresentation(Piece piece){
         if(piece == null){
-            return "-";
+            return "\u2009-\u2009";
         }
             String out = "-";
             switch (piece){
                 case WHITE_BISHOP:
-                    out = "B";
+                    out = "\u2657";
                     break;
                 case BLACK_BISHOP:
-                    out = "b";
+                    out = "\u265D";
                     break;
                 case WHITE_PAWN:
-                    out = "P";
+                    out = "\u2659";
                     break;
                 case BLACK_PAWN:
-                    out = "p";
+                    out = "\u265F";
                     break;
                 case WHITE_ROOK:
-                    out = "R";
+                    out = "\u2656";
                     break;
                 case BLACK_ROOK:
-                    out = "r";
+                    out = "\u265C";
                     break;
                 case WHITE_KNIGHT:
-                    out = "N";
+                    out = "\u2658";
                     break;
                 case BLACK_KNIGHT:
-                    out = "n";
+                    out = "\u265E";
                     break;
                 case WHITE_KING:
-                    out = "K";
+                  out =   "\u2654";
                     break;
                 case BLACK_KING:
-                    out = "k";
+                    out = "\u265A";
                     break;
                 case WHITE_QUEEN:
-                    out = "Q";
+                    out = "\u2655";
                     break;
                 case BLACK_QUEEN:
-                    out = "q";
+                    out = "\u265B";
                     break;
             }
             return out;
