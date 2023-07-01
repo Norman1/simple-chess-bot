@@ -26,7 +26,7 @@ public class FollowupBoardStates {
         this.initialState = initialState;
         boolean isWhitePlayerMove = initialState.isWhitePlayerMove();
         // TODO debug
-        isWhitePlayerMove = false;
+        isWhitePlayerMove = true;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
                 Piece piece = initialState.getChessBoard()[row][column];
@@ -64,6 +64,36 @@ public class FollowupBoardStates {
                             followupStates.addAll(handleBlackPawn(row,column));
                         }
                         break;
+                    case WHITE_BISHOP:
+                        if(isWhitePlayerMove){
+                            followupStates.addAll(handleBishop(row,column,piece));
+                        }
+                        break;
+                    case BLACK_BISHOP:
+                        if(!isWhitePlayerMove){
+
+                        }
+                        break;
+                    case WHITE_QUEEN:
+                        if(isWhitePlayerMove){
+
+                        }
+                        break;
+                    case BLACK_QUEEN:
+                            if(!isWhitePlayerMove){
+
+                            }
+                            break;
+                    case WHITE_KING:
+                        if(isWhitePlayerMove){
+
+                        }
+                        break;
+                    case BLACK_KING:
+                        if(!isWhitePlayerMove){
+
+                        }
+                        break;
                     default:
                         break;
                 }
@@ -71,7 +101,6 @@ public class FollowupBoardStates {
         }
     }
 
-    // TODO neu
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBlackPawn(int row, int column) {
         List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
 
@@ -240,6 +269,72 @@ public class FollowupBoardStates {
         }
 
         return followupStates;
+    }
+
+
+    private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBishop(int row, int column, Piece piece) {
+        List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
+        // left up
+        for(int i = 1; i < 8; i++){
+            Tuple2<Integer,Integer> location = Tuples.of(row+i,column-i);
+            if(!isLocationInBounds(location)){
+                break;
+            }
+            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+                break;
+            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
+                moveLocations.add(Tuples.of(row+i, column-i));
+                break;
+            }
+            moveLocations.add(Tuples.of(row+i, column-i));
+        }
+
+        // right up
+        for(int i = 1; i < 8; i++){
+            Tuple2<Integer,Integer> location = Tuples.of(row+i,column +i);
+            if(!isLocationInBounds(location)){
+                break;
+            }
+            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+                break;
+            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
+                moveLocations.add(Tuples.of(row+i, column+i));
+                break;
+            }
+            moveLocations.add(Tuples.of(row+i, column+i));
+        }
+
+        // left down
+        for(int i = 1; i < 8; i++){
+            Tuple2<Integer,Integer> location = Tuples.of(row-i,column-i);
+            if(!isLocationInBounds(location)){
+                break;
+            }
+            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+                break;
+            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
+                moveLocations.add(Tuples.of(row-i, column-i));
+                break;
+            }
+            moveLocations.add(Tuples.of(row-i, column-i));
+        }
+
+        // right down
+        for(int i = 1; i < 8; i++){
+            Tuple2<Integer,Integer> location = Tuples.of(row-i,column+i);
+            if(!isLocationInBounds(location)){
+                break;
+            }
+            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+                break;
+            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
+                moveLocations.add(Tuples.of(row-i, column+i));
+                break;
+            }
+            moveLocations.add(Tuples.of(row-i, column+i));
+        }
+
+        return getFollowupStates(row, column, moveLocations, piece);
     }
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleRook(int row, int column, Piece piece) {

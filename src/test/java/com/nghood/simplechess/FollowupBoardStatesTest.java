@@ -18,6 +18,15 @@ import static com.nghood.simplechess.model.Piece.BLACK_ROOK;
 
 public class FollowupBoardStatesTest {
 
+    private Piece[][] bishopTest = {
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, WHITE_BISHOP, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null}};
 
     private Piece[][] knightsTest = {
             {WHITE_KNIGHT, null, null, null, null, null, null, null},
@@ -100,6 +109,22 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
+
+
+    @Test
+    @DisplayName("Bishops need to work correctly")
+    public void testBishops() {
+        BoardState initialState = new BoardState();
+        initialState.setChessBoard(bishopTest);
+        BoardPrinter boardPrinter = new BoardPrinter();
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
+        var followupStates = followupBoardStates.getFollowupStates();
+        System.out.println(followupStates.size());
+        for (var followupState : followupStates) {
+            boardPrinter.printBoard(followupState.getT6().getChessBoard());
+            System.out.println();
+        }
+    }
 
 
     @Test
