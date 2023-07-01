@@ -11,24 +11,66 @@ import reactor.util.function.Tuple6;
 
 import java.util.List;
 
+import static com.nghood.simplechess.model.Piece.*;
+import static com.nghood.simplechess.model.Piece.BLACK_ROOK;
+
 
 public class FollowupBoardStatesTest {
 
+
+    private Piece[][] knightsTest = {
+            {WHITE_KNIGHT, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null}};
+
+
+    private Piece[][] rooksTest = {
+            {WHITE_ROOK, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null}};
+
+
     @Test
     @DisplayName("Knights needs to work correctly")
-    public void testKnights(){
+    public void testKnights() {
         BoardState initialState = new BoardState();
-        initialState.setupInitialBoard();
-        initialState.getChessBoard()[5][5] = Piece.WHITE_KNIGHT;
+        initialState.setChessBoard(knightsTest);
         BoardPrinter boardPrinter = new BoardPrinter();
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
         var followupStates = followupBoardStates.getFollowupStates();
         System.out.println(followupStates.size());
-        for(var followupState : followupStates){
+        for (var followupState : followupStates) {
             boardPrinter.printBoard(followupState.getT6().getChessBoard());
             System.out.println();
         }
-
-
     }
+
+
+    @Test
+    @DisplayName("Rooks needs to work correctly")
+    public void testRooks() {
+        BoardState initialState = new BoardState();
+        initialState.setChessBoard(rooksTest);
+        BoardPrinter boardPrinter = new BoardPrinter();
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
+        var followupStates = followupBoardStates.getFollowupStates();
+        System.out.println(followupStates.size());
+        for (var followupState : followupStates) {
+            boardPrinter.printBoard(followupState.getT6().getChessBoard());
+            System.out.println("Left white rook moved:"+followupState.getT6().isLeftWhiteRookMoved());
+            System.out.println("Right white rook moved:"+followupState.getT6().isRightBlackRookMoved());
+        }
+    }
+
+
 }

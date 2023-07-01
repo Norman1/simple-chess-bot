@@ -39,10 +39,74 @@ public class FollowupBoardStates {
                     case BLACK_KNIGHT:
                         followupStates.addAll(handleKnight(row,column,Piece.BLACK_KNIGHT));
                         break;
+                    case  WHITE_ROOK:
+                        followupStates.addAll(handleRook(row,column,Piece.WHITE_ROOK));
+                        break;
+                    case BLACK_ROOK:
+                        followupStates.addAll(handleRook(row,column,Piece.BLACK_ROOK));
+                        break;
                     default: break;
                 }
             }
         }
+    }
+
+    private  List<Tuple6<Integer,Integer,Integer,Integer,Piece,BoardState>> handleRook(int row, int column, Piece piece){
+        List<Tuple2<Integer,Integer>> moveLocations = new ArrayList<>();
+        // row up
+        for(int i = row+1; i < 8; i++){
+            if(isLocationOwnedBySelf(i,column,piece)){
+                break;
+            }
+            moveLocations.add(Tuples.of(i,column));
+        }
+       // row down
+        for(int i = row-1; i >=0; i--) {
+            if (isLocationOwnedBySelf(i, column, piece)) {
+                break;
+            }
+            moveLocations.add(Tuples.of(i, column));
+        }
+
+        // column right
+        for(int i = column+1; i < 8; i++){
+            if(isLocationOwnedBySelf(row,i,piece)){
+                break;
+            }
+            moveLocations.add(Tuples.of(row,i));
+        }
+
+        // column left
+        for(int i = column-1; i >=0; i--){
+            if(isLocationOwnedBySelf(row,i,piece)){
+                break;
+            }
+            moveLocations.add(Tuples.of(row,i));
+        }
+
+        var followupStates = getFollowupStates(row,column,moveLocations,piece);
+
+        for(var followupState : followupStates){
+            // white queen rook initial position
+            if(row == 0 && column == 0){
+                followupState.getT6().setLeftWhiteRookMoved(true);
+            }
+            // white king rook initial position
+            if(row == 0 && column == 7){
+                followupState.getT6().setRightWhiteRookMoved(true);
+            }
+
+            // black queen rook initial position
+            if(row == 7 && column == 0){
+                followupState.getT6().setLeftBlackRookMoved(true);
+            }
+
+            // black king rook initial position
+            if(row == 7 && column == 7){
+                followupState.getT6().setRightBlackRookMoved(true);
+            }
+        }
+        return followupStates;
     }
 
     private  List<Tuple6<Integer,Integer,Integer,Integer,Piece,BoardState>> handleKnight(int row, int column, Piece piece){
@@ -92,19 +156,17 @@ public class FollowupBoardStates {
 
 
     private List<Tuple2<Integer,Integer>> removeLocationsOwnedBySelf(List<Tuple2<Integer,Integer>> locations, Piece piece){
+        return locations.stream().filter(location -> !isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)).collect(Collectors.toList());
+    }
 
-        return locations.stream().filter(location -> {
-            boolean pieceIsWhite = piece.ordinal() <= 5;
-            Piece jumpPiece  = initialState.getChessBoard()[location.getT1()][location.getT2()];
-            if(jumpPiece == null){
-                return true;
-            }
-            boolean locationIsWhite = jumpPiece.ordinal() <= 5;
-            if(pieceIsWhite == locationIsWhite){
-                return false;
-            }
-            return true;
-        }).collect(Collectors.toList());
+    private boolean isLocationOwnedBySelf(int row, int column, Piece testPiece){
+        boolean pieceIsWhite = testPiece.ordinal() <= 5;
+        Piece pieceOnLocation  = initialState.getChessBoard()[row][column];
+        if(pieceOnLocation == null){
+            return false;
+        }
+        boolean locationIsWhite = pieceOnLocation.ordinal() <= 5;
+        return pieceIsWhite == locationIsWhite;
     }
 
 

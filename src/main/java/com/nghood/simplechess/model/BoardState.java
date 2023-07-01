@@ -31,6 +31,8 @@ public class BoardState {
      */
     private Piece[][] chessBoard;
 
+
+
     public void setupInitialBoard() {
         Piece[][] initialBoard = {{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK},
                 {WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
