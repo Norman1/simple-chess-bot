@@ -33,6 +33,16 @@ public class FollowupBoardStatesTest {
             {WHITE_ROOK, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
+            {BLACK_PAWN, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null}};
+
+    private Piece[][] whitePawnTest = {
+            {null, null, null, null, null, null, null, null},
+            {null, null, WHITE_PAWN, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -41,7 +51,7 @@ public class FollowupBoardStatesTest {
 
 
     @Test
-    @DisplayName("Knights needs to work correctly")
+    @DisplayName("Knight needs to work correctly")
     public void testKnights() {
         BoardState initialState = new BoardState();
         initialState.setChessBoard(knightsTest);
@@ -57,7 +67,7 @@ public class FollowupBoardStatesTest {
 
 
     @Test
-    @DisplayName("Rooks needs to work correctly")
+    @DisplayName("Rooks need to work correctly")
     public void testRooks() {
         BoardState initialState = new BoardState();
         initialState.setChessBoard(rooksTest);
@@ -69,6 +79,22 @@ public class FollowupBoardStatesTest {
             boardPrinter.printBoard(followupState.getT6().getChessBoard());
             System.out.println("Left white rook moved:"+followupState.getT6().isLeftWhiteRookMoved());
             System.out.println("Right white rook moved:"+followupState.getT6().isRightBlackRookMoved());
+        }
+    }
+
+    @Test
+    @DisplayName("WhitePawns need to work correctly")
+    public void testWhitePawn() {
+        BoardState initialState = new BoardState();
+        initialState.setChessBoard(whitePawnTest);
+        BoardPrinter boardPrinter = new BoardPrinter();
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
+        var followupStates = followupBoardStates.getFollowupStates();
+        System.out.println(followupStates.size());
+        for (var followupState : followupStates) {
+            boardPrinter.printBoard(followupState.getT6().getChessBoard());
+            System.out.println("EnPassantVulnerable: "+followupState.getT6().getEnPassantVulnerablePawn());
+            System.out.println();
         }
     }
 

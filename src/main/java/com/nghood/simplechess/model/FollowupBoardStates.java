@@ -22,9 +22,7 @@ public class FollowupBoardStates {
     // first row, first column, second row, second column
     private List<Tuple6<Integer,Integer,Integer,Integer,Piece,BoardState>> followupStates = new ArrayList<>();
 
-
     public FollowupBoardStates(BoardState initialState){
-
         this.initialState  = initialState;
         for(int row = 0; row < 8; row ++){
             for(int column = 0; column < 8; column ++){
@@ -45,10 +43,50 @@ public class FollowupBoardStates {
                     case BLACK_ROOK:
                         followupStates.addAll(handleRook(row,column,Piece.BLACK_ROOK));
                         break;
+                    case WHITE_PAWN:
+                        //followupStates.addAll(handleWhitePawn(row,column));
+                        break;
+                    case BLACK_PAWN:
+                        break;
                     default: break;
                 }
             }
         }
+    }
+
+    private  List<Tuple6<Integer,Integer,Integer,Integer,Piece,BoardState>> handleWhitePawn(int row, int column){
+        List<Tuple2<Integer,Integer>> moveLocations = new ArrayList<>();
+
+
+        // move 1 up
+        boolean up1IsTaken = isLocationOwnedBySomeone(row+1,column);
+        if(!up1IsTaken){
+            moveLocations.add(Tuples.of(row+1,column));
+        }
+
+        // move 2 up
+        boolean up2IsTaken = isLocationOwnedBySomeone(row+2,column);
+        if(row == 1 && !up1IsTaken){
+            if(!up2IsTaken){
+                moveLocations.add(Tuples.of(row+2,column));
+            }
+        }
+
+        // attack
+
+
+
+        // take en passant
+
+        // promote
+
+        var followupStates = getFollowupStates(row,column,moveLocations,Piece.WHITE_PAWN);
+        // moving 2 up is the second entry if up1IsTaken == up2IsTaken == false
+        if(!up1IsTaken && !up2IsTaken){
+            followupStates.get(1).getT6().setEnPassantVulnerablePawn(Tuples.of(row+2,column));
+        }
+
+        return followupStates;
     }
 
     private  List<Tuple6<Integer,Integer,Integer,Integer,Piece,BoardState>> handleRook(int row, int column, Piece piece){
@@ -57,12 +95,18 @@ public class FollowupBoardStates {
         for(int i = row+1; i < 8; i++){
             if(isLocationOwnedBySelf(i,column,piece)){
                 break;
+            }else if(isLocationOwnedByOpponent(i,column,piece)){
+                moveLocations.add(Tuples.of(i,column));
+                break;
             }
             moveLocations.add(Tuples.of(i,column));
         }
        // row down
         for(int i = row-1; i >=0; i--) {
             if (isLocationOwnedBySelf(i, column, piece)) {
+                break;
+            }else if(isLocationOwnedByOpponent(i,column,piece)){
+                moveLocations.add(Tuples.of(i,column));
                 break;
             }
             moveLocations.add(Tuples.of(i, column));
@@ -72,6 +116,9 @@ public class FollowupBoardStates {
         for(int i = column+1; i < 8; i++){
             if(isLocationOwnedBySelf(row,i,piece)){
                 break;
+            }else if(isLocationOwnedByOpponent(row,i,piece)){
+                moveLocations.add(Tuples.of(row,i));
+                break;
             }
             moveLocations.add(Tuples.of(row,i));
         }
@@ -79,6 +126,9 @@ public class FollowupBoardStates {
         // column left
         for(int i = column-1; i >=0; i--){
             if(isLocationOwnedBySelf(row,i,piece)){
+                break;
+            }else if(isLocationOwnedByOpponent(row,i,piece)){
+                moveLocations.add(Tuples.of(row,i));
                 break;
             }
             moveLocations.add(Tuples.of(row,i));
@@ -168,6 +218,24 @@ public class FollowupBoardStates {
         boolean locationIsWhite = pieceOnLocation.ordinal() <= 5;
         return pieceIsWhite == locationIsWhite;
     }
+
+    private boolean isLocationOwnedByOpponent(int row, int column, Piece testPiece){
+        boolean pieceIsWhite = testPiece.ordinal() <= 5;
+        Piece pieceOnLocation  = initialState.getChessBoard()[row][column];
+        if(pieceOnLocation == null){
+            return false;
+        }
+        boolean locationIsWhite = pieceOnLocation.ordinal() <= 5;
+        return pieceIsWhite != locationIsWhite;
+    }
+
+
+
+    private boolean isLocationOwnedBySomeone(int row, int column){
+        return initialState.getChessBoard()[row][column] != null;
+    }
+
+
 
 
 }
