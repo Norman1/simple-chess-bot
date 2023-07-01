@@ -26,7 +26,7 @@ public class FollowupBoardStates {
         this.initialState = initialState;
         boolean isWhitePlayerMove = initialState.isWhitePlayerMove();
         // TODO debug
-        isWhitePlayerMove = true;
+        isWhitePlayerMove = false;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
                 Piece piece = initialState.getChessBoard()[row][column];
@@ -61,7 +61,7 @@ public class FollowupBoardStates {
                         break;
                     case BLACK_PAWN:
                         if (!isWhitePlayerMove) {
-                            // TODO
+                            followupStates.addAll(handleBlackPawn(row,column));
                         }
                         break;
                     default:
@@ -69,6 +69,92 @@ public class FollowupBoardStates {
                 }
             }
         }
+    }
+
+    // TODO neu
+    private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBlackPawn(int row, int column) {
+        List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
+
+
+        // move 1 down
+        boolean down1IsTaken = isLocationOwnedBySomeone(row - 1, column);
+        if (!down1IsTaken) {
+            moveLocations.add(Tuples.of(row - 1, column));
+        }
+
+        // move 2 down
+        boolean down2IsTaken = !isLocationInBounds(Tuples.of(row - 2, column)) || isLocationOwnedBySomeone(row - 2, column);
+        if (row == 6 && !down1IsTaken) {
+            if (!down2IsTaken) {
+                moveLocations.add(Tuples.of(row - 2, column));
+            }
+        }
+
+        // attack
+        Tuple2<Integer, Integer> attackLeft = Tuples.of(row - 1, column - 1);
+        Tuple2<Integer, Integer> attackRight = Tuples.of(row - 1, column + 1);
+        if (isLocationInBounds(attackLeft) && isLocationOwnedByOpponent(row - 1, column - 1, Piece.BLACK_PAWN)) {
+            moveLocations.add(attackLeft);
+        }
+        if (isLocationInBounds(attackRight) && isLocationOwnedByOpponent(row - 1, column + 1, Piece.BLACK_PAWN)) {
+            moveLocations.add(attackRight);
+        }
+
+        var followupStates = getFollowupStates(row, column, moveLocations, Piece.BLACK_PAWN);
+
+        // take en passant
+        Tuple2<Integer, Integer> whiteEnPassantVulnerablePawn = initialState.getEnPassantVulnerablePawn();
+        if (whiteEnPassantVulnerablePawn != null) {
+            // have to be on 4th row and 1 column to the left or right
+            if (row == 3 && (whiteEnPassantVulnerablePawn.getT2() == column - 1 || whiteEnPassantVulnerablePawn.getT2() == column + 1)) {
+                Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> takeEnPassantFollowupState = Tuples.of(row, column, row - 1, whiteEnPassantVulnerablePawn.getT2(), Piece.BLACK_PAWN, initialState.getCopy());
+                takeEnPassantFollowupState.getT6().getChessBoard()[whiteEnPassantVulnerablePawn.getT1()][whiteEnPassantVulnerablePawn.getT2()] = null;
+                takeEnPassantFollowupState.getT6().getChessBoard()[row][column] = null;
+                takeEnPassantFollowupState.getT6().getChessBoard()[whiteEnPassantVulnerablePawn.getT1() - 1][whiteEnPassantVulnerablePawn.getT2()] = Piece.BLACK_PAWN;
+                followupStates.add(takeEnPassantFollowupState);
+            }
+        }
+
+        // promote
+        var promotionStates = followupStates.stream().filter(state -> state.getT3() == 0).collect(Collectors.toList());
+        followupStates.removeAll(promotionStates);
+
+        for (var promotionState : promotionStates) {
+            // black bishop
+            Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> blackBishopState =
+                    Tuples.of(promotionState.getT1(), promotionState.getT2(), promotionState.getT3(), promotionState.getT4(),
+                            promotionState.getT5(), promotionState.getT6().getCopy());
+            blackBishopState.getT6().getChessBoard()[blackBishopState.getT3()][blackBishopState.getT4()] = Piece.BLACK_BISHOP;
+            followupStates.add(blackBishopState);
+
+            // black knight
+            Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> blackKnightState =
+                    Tuples.of(promotionState.getT1(), promotionState.getT2(), promotionState.getT3(), promotionState.getT4(),
+                            promotionState.getT5(), promotionState.getT6().getCopy());
+            blackKnightState.getT6().getChessBoard()[blackKnightState.getT3()][blackKnightState.getT4()] = Piece.BLACK_KNIGHT;
+            followupStates.add(blackKnightState);
+
+            // black rook
+            Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> blackRookState =
+                    Tuples.of(promotionState.getT1(), promotionState.getT2(), promotionState.getT3(), promotionState.getT4(),
+                            promotionState.getT5(), promotionState.getT6().getCopy());
+            blackRookState.getT6().getChessBoard()[blackRookState.getT3()][blackRookState.getT4()] = Piece.BLACK_ROOK;
+            followupStates.add(blackRookState);
+
+            // white queen
+            Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> blackQueenState =
+                    Tuples.of(promotionState.getT1(), promotionState.getT2(), promotionState.getT3(), promotionState.getT4(),
+                            promotionState.getT5(), promotionState.getT6().getCopy());
+            blackQueenState.getT6().getChessBoard()[blackQueenState.getT3()][blackQueenState.getT4()] = Piece.BLACK_QUEEN;
+            followupStates.add(blackQueenState);
+        }
+
+        // moving 2 up is the second entry if up1IsTaken == up2IsTaken == false
+        if (!down1IsTaken && !down2IsTaken && row == 1) {
+            followupStates.get(1).getT6().setEnPassantVulnerablePawn(Tuples.of(row - 2, column));
+        }
+
+        return followupStates;
     }
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleWhitePawn(int row, int column) {
