@@ -8,6 +8,7 @@ import com.nghood.simplechess.model.Piece;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import reactor.util.function.Tuple6;
+import reactor.util.function.Tuples;
 
 import java.util.List;
 
@@ -42,9 +43,29 @@ public class FollowupBoardStatesTest {
     private Piece[][] whitePawnTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, WHITE_PAWN, null, null, null, null, null},
+            {null, BLACK_PAWN, null, BLACK_PAWN, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null}};
+
+    private Piece[][] whitePromotionTest = {
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {WHITE_PAWN, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null}};
+
+    private Piece[][] whiteEnPassantTest = {
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, null},
+            {WHITE_PAWN, BLACK_PAWN, WHITE_PAWN, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
@@ -76,6 +97,7 @@ public class FollowupBoardStatesTest {
         var followupStates = followupBoardStates.getFollowupStates();
         System.out.println(followupStates.size());
         for (var followupState : followupStates) {
+
             boardPrinter.printBoard(followupState.getT6().getChessBoard());
             System.out.println("Left white rook moved:"+followupState.getT6().isLeftWhiteRookMoved());
             System.out.println("Right white rook moved:"+followupState.getT6().isRightBlackRookMoved());
@@ -94,6 +116,37 @@ public class FollowupBoardStatesTest {
         for (var followupState : followupStates) {
             boardPrinter.printBoard(followupState.getT6().getChessBoard());
             System.out.println("EnPassantVulnerable: "+followupState.getT6().getEnPassantVulnerablePawn());
+            System.out.println();
+        }
+    }
+
+    @Test
+    @DisplayName("White pawn promotion needs to work correctly")
+    public void testWhitePawnPromotion() {
+        BoardState initialState = new BoardState();
+        initialState.setChessBoard(whitePromotionTest);
+        BoardPrinter boardPrinter = new BoardPrinter();
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
+        var followupStates = followupBoardStates.getFollowupStates();
+        System.out.println(followupStates.size());
+        for (var followupState : followupStates) {
+            boardPrinter.printBoard(followupState.getT6().getChessBoard());
+            System.out.println();
+        }
+    }
+
+    @Test
+    @DisplayName("White en passant needs to work correctly")
+    public void testWhiteEnPassant() {
+        BoardState initialState = new BoardState();
+        initialState.setChessBoard(whiteEnPassantTest);
+        initialState.setEnPassantVulnerablePawn(Tuples.of(4,1));
+        BoardPrinter boardPrinter = new BoardPrinter();
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
+        var followupStates = followupBoardStates.getFollowupStates();
+        System.out.println(followupStates.size());
+        for (var followupState : followupStates) {
+            boardPrinter.printBoard(followupState.getT6().getChessBoard());
             System.out.println();
         }
     }
