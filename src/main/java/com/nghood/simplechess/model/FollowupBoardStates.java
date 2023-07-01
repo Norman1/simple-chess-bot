@@ -3,10 +3,7 @@ package com.nghood.simplechess.model;
 import ch.qos.logback.classic.pattern.ClassOfCallerConverter;
 import lombok.Data;
 
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuple5;
-import reactor.util.function.Tuple6;
-import reactor.util.function.Tuples;
+import reactor.util.function.*;
 
 import java.util.ArrayList;
 import java.util.List;
