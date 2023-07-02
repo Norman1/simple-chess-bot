@@ -27,6 +27,10 @@ public class AttackBoardState {
         attackStates[row][column] = pieceValue;
     }
 
+    public boolean isFieldUnderAttack(int row, int column){
+        return attackStates[row][column] != -1;
+    }
+
 
 
 }

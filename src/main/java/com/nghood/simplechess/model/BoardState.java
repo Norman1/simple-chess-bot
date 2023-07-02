@@ -14,10 +14,11 @@ import static com.nghood.simplechess.model.Piece.*;
  */
 @Data
 public class BoardState {
-    private int turn;
+    private int turn = 1;
     private boolean isWhitePlayerMove;
     private boolean isWhiteKingMoved;
     private boolean isBlackKingMoved;
+    // TODO also set to true if opponent captures
     private boolean isLeftWhiteRookMoved;
     private boolean isRightWhiteRookMoved;
     private boolean isLeftBlackRookMoved;
@@ -43,9 +44,13 @@ public class BoardState {
                 {BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN},
                 {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}};
 
-        turn = 1;
         isWhitePlayerMove = true;
         chessBoard = initialBoard;
+    }
+
+    public void nextMove(){
+        turn++;
+        isWhitePlayerMove =!isWhitePlayerMove;
     }
 
     public BoardState getCopy() {
