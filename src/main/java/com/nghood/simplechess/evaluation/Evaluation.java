@@ -1,4 +1,4 @@
-package com.nghood.simplechess.model;
+package com.nghood.simplechess.evaluation;
 
 import com.nghood.simplechess.model.BoardState;
 import com.nghood.simplechess.model.Piece;
@@ -163,8 +163,6 @@ public class Evaluation {
             case BLACK_QUEEN:
                 return -QUEEN_VALUE;
         }
-
-
         return 0;
     }
 

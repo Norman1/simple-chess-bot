@@ -23,7 +23,7 @@ public class FollowupBoardStates {
         this.initialState = initialState;
         boolean isWhitePlayerMove = initialState.isWhitePlayerMove();
         // TODO debug
-        isWhitePlayerMove = true;
+        //isWhitePlayerMove = true;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
                 Piece piece = initialState.getChessBoard()[row][column];
