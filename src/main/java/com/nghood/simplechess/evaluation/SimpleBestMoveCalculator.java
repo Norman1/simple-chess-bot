@@ -11,8 +11,6 @@ import reactor.util.function.Tuples;
  */
 public class SimpleBestMoveCalculator implements  BestMoveCalculation {
 
-
-    // TODO debug state currently, also with return value
     @Override
     public Tuple2<String,BoardState> calculateBestMove(BoardState initialState) {
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);

@@ -1,5 +1,7 @@
 package com.nghood.simplechess.play;
 
+import com.nghood.simplechess.evaluation.BestMoveCalculation;
+import com.nghood.simplechess.evaluation.BestMoveCalculatorSimpleMinimax;
 import com.nghood.simplechess.evaluation.SimpleBestMoveCalculator;
 import com.nghood.simplechess.io.BoardPrinter;
 import com.nghood.simplechess.model.BoardState;
@@ -19,7 +21,8 @@ public class CompeteAgainstSelf {
         boardPrinter.printBoard(boardState.getChessBoard());
         for(int i = 0; i < MAX_TURNS; i++){
             System.out.println("Turn: "+boardState.getTurn());
-            SimpleBestMoveCalculator bestMoveCalculator = new SimpleBestMoveCalculator();
+         //   SimpleBestMoveCalculator bestMoveCalculator = new SimpleBestMoveCalculator();
+            BestMoveCalculation bestMoveCalculator = new BestMoveCalculatorSimpleMinimax();
             Tuple2<String,BoardState> bestMove = bestMoveCalculator.calculateBestMove(boardState);
             System.out.println("Performing move "+bestMove.getT1());
             boardPrinter.printBoard(bestMove.getT2().getChessBoard());
