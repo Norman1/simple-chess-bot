@@ -165,19 +165,6 @@ public class FollowupBoardStates {
         return followupStates;
     }
 
-//    private List<Tuple2<Integer, Integer>> removeErroneousKingLocations(
-//            List<Tuple2<Integer, Integer>> moveLocations,AttackBoardState opponentAttacks, Piece piece){
-//        List<Tuple2<Integer, Integer>> nonErroneousLocations = removeErroneousLocations(moveLocations,piece);
-//        if(opponentAttacks == null){
-//            // we are calculating for the opponent here
-//            return  nonErroneousLocations;
-//        }
-//        nonErroneousLocations =
-//                nonErroneousLocations.stream().filter(
-//                        location -> !opponentAttacks.isFieldUnderAttack(location.getT1(),location.getT2())).collect(Collectors.toList());
-//
-//        return nonErroneousLocations;
-//    }
 
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBlackPawn(int row, int column) {
