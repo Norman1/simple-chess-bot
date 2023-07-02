@@ -348,7 +348,7 @@ public class FollowupBoardStates {
 
         return followupStates;
     }
-    
+
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleQueen(int row, int column, Piece piece) {
         var result = handleBishop(row,column,piece);
         // the isRookMoved stuff is no problem since if the queen is there the rook is gone from there

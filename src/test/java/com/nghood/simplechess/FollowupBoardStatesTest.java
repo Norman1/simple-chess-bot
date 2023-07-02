@@ -19,7 +19,7 @@ import static com.nghood.simplechess.model.Piece.BLACK_ROOK;
 public class FollowupBoardStatesTest {
 
 
-    private Piece[][] queenTest = {
+    private final Piece[][] queenTest = {
             {null, null, null, null, null, null, null, null},
             {null, WHITE_QUEEN, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -29,7 +29,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] kingTest = {
+    private final Piece[][] kingTest = {
             {WHITE_ROOK, null, null, null, WHITE_KING, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -39,7 +39,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] bishopTest = {
+    private final Piece[][] bishopTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, WHITE_BISHOP, null, null},
@@ -49,7 +49,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] knightsTest = {
+    private final Piece[][] knightsTest = {
             {WHITE_KNIGHT, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -60,7 +60,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null}};
 
 
-    private Piece[][] rooksTest = {
+    private final Piece[][] rooksTest = {
             {WHITE_ROOK, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -70,7 +70,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] whitePawnTest = {
+    private final Piece[][] whitePawnTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, WHITE_PAWN, null, null, null, null, null},
             {null, BLACK_PAWN, null, BLACK_PAWN, null, null, null, null},
@@ -80,7 +80,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] blackPawnTest = {
+    private final Piece[][] blackPawnTest = {
             {null, null, null, null, null, null, null, null},
             {WHITE_PAWN, null, WHITE_PAWN, null, null, null, null, null},
             {null, BLACK_PAWN, null, null, null, null, null, null},
@@ -90,7 +90,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] whitePromotionTest = {
+    private final Piece[][] whitePromotionTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -100,7 +100,7 @@ public class FollowupBoardStatesTest {
             {WHITE_PAWN, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] blackPromotionTest = {
+    private final Piece[][] blackPromotionTest = {
             {null, null, null, null, null, null, null, null},
             {BLACK_PAWN, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -111,7 +111,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null}};
 
 
-    private Piece[][] whiteEnPassantTest = {
+    private final Piece[][] whiteEnPassantTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
@@ -121,7 +121,7 @@ public class FollowupBoardStatesTest {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null}};
 
-    private Piece[][] blackEnPassantTest = {
+    private final Piece[][] blackEnPassantTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},

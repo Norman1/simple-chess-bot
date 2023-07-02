@@ -11,7 +11,7 @@ import static com.nghood.simplechess.model.Piece.*;
 public class AttackBoardStateCalculatorTest {
 
 
-    private Piece[][] attackBoardStateTest = {
+    private final Piece[][] attackBoardStateTest = {
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, WHITE_PAWN, null},
             {null, null, null, null, null, BLACK_PAWN, null, null},
