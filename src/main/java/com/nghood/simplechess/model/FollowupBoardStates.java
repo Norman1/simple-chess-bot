@@ -73,18 +73,17 @@ public class FollowupBoardStates {
                         break;
                     case WHITE_QUEEN:
                         if(isWhitePlayerMove){
-
+                            followupStates.addAll(handleQueen(row,column,piece));
                         }
                         break;
                     case BLACK_QUEEN:
                         if(!isWhitePlayerMove){
-
+                            followupStates.addAll(handleQueen(row,column,piece));
                         }
                         break;
                     case WHITE_KING:
                         if(isWhitePlayerMove){
                             followupStates.addAll(handleKing(row,column,piece));
-
                         }
                         break;
                     case BLACK_KING:
@@ -349,7 +348,13 @@ public class FollowupBoardStates {
 
         return followupStates;
     }
-
+    
+    private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleQueen(int row, int column, Piece piece) {
+        var result = handleBishop(row,column,piece);
+        // the isRookMoved stuff is no problem since if the queen is there the rook is gone from there
+        result.addAll(handleRook(row,column,piece));
+        return result;
+    }
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBishop(int row, int column, Piece piece) {
         List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
