@@ -1,8 +1,9 @@
 package com.nghood.simplechess.play;
 
-import com.nghood.simplechess.evaluation.BestMoveCalculator;
+import com.nghood.simplechess.evaluation.SimpleBestMoveCalculator;
 import com.nghood.simplechess.io.BoardPrinter;
 import com.nghood.simplechess.model.BoardState;
+import reactor.util.function.Tuple2;
 
 /**
  * Makes the bot competes against itself and prints the board each turn.
@@ -18,10 +19,11 @@ public class CompeteAgainstSelf {
         boardPrinter.printBoard(boardState.getChessBoard());
         for(int i = 0; i < MAX_TURNS; i++){
             System.out.println("Turn: "+boardState.getTurn());
-            BestMoveCalculator bestMoveCalculator = new BestMoveCalculator();
-            BoardState bestMove = bestMoveCalculator.calculateBestMove(boardState);
-            boardPrinter.printBoard(bestMove.getChessBoard());
-            boardState = bestMove;
+            SimpleBestMoveCalculator bestMoveCalculator = new SimpleBestMoveCalculator();
+            Tuple2<String,BoardState> bestMove = bestMoveCalculator.calculateBestMove(boardState);
+            System.out.println("Performing move "+bestMove.getT1());
+            boardPrinter.printBoard(bestMove.getT2().getChessBoard());
+            boardState = bestMove.getT2();
         }
 
     }
