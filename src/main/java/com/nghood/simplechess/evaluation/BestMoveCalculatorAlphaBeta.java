@@ -41,22 +41,23 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
      * opponent played move was probably sound (perhaps would be better if we still did).
      * 2. For each capture add x10 the value of the captured piece and subtract the value of the capturing piece. x10 ensures that
      * capturing is not negative.
-     * 3. For each non-capture, only sort it if attackBoardState != null. In this case, sort by the evaluation of the board and add
-     * a huge subtraction if we are moving to a field which is under opponent attack from a piece which is worth less than our piece.
+     * 3. For each non-capture add a subtraction if we are moving to a field which is under opponent attack from a piece which is worth less than our piece. Evaluating
+     * the board value seems too expensive and does not seem to give benefits.
      *
      */
-    private void sortMoves(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates, Tuple2<Integer,Integer> lastMovedPiece,BoardState initialState) {
+    private void sortMoves(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates, Tuple2<Integer,Integer> lastMovedPiece,BoardState initialState,AttackBoardState attackBoardState) {
         /* Case no sort: 16 seconds, All traversed nodes: 6678706
-         * Add sort last capture (no least valuable piece yet): 13 secondsm All traversed nodes: 4192084
+         * Add sort last capture (no least valuable piece yet): 13 seconds All traversed nodes: 4192084
          * Add capturing pieces: 11 seconds, All traversed nodes: 2358361
+         * Add non captures: 12 seconds, All traversed nodes: 2111608
          */
 
 
-       followupStates.sort((followup1,followup2) -> Integer.compare(getSortValue(followup2,lastMovedPiece,initialState),getSortValue(followup1,lastMovedPiece,initialState)));
+       followupStates.sort((followup1,followup2) -> Integer.compare(getSortValue(followup2,lastMovedPiece,initialState,attackBoardState),getSortValue(followup1,lastMovedPiece,initialState,attackBoardState)));
     }
 
     // first row, first column, second row, second column
-    private int getSortValue(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> followupState, Tuple2<Integer,Integer> lastMovedPiece,BoardState initialState){
+    private int getSortValue(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> followupState, Tuple2<Integer,Integer> lastMovedPiece,BoardState initialState,AttackBoardState attackBoardState){
         // we fail to consider stuff like en passant captures but whatever
         int value = 0;
         // Prio 1: last moved piece captures
@@ -72,18 +73,23 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
         // Prio 2: captures
         Piece previousPieceOnPosition = initialState.getChessBoard()[followupState.getT3()][followupState.getT4()];
+        Piece movingPiece = followupState.getT6().getChessBoard()[followupState.getT3()][followupState.getT4()];
+        int movingPieceValue = Evaluation.getAbsolutePieceValue(movingPiece);
         if(previousPieceOnPosition != null){
             int capturedPieceValue = Evaluation.getAbsolutePieceValue(previousPieceOnPosition);
-            Piece capturingPiece = followupState.getT6().getChessBoard()[followupState.getT3()][followupState.getT4()];
-            int capturingPieceValue = Evaluation.getAbsolutePieceValue(capturingPiece);
             value += 10* capturedPieceValue;
-            value -= capturingPieceValue;
+            value -= movingPieceValue;
+            // Prio 3: non captures (TODO: prunes little branches and makes the bot even a tiny bit slower)
         }
+            int opponentAttackValue = attackBoardState.getAttackValue(followupState.getT3(),followupState.getT4());
+            if(opponentAttackValue != -1){
+                    value -= movingPieceValue;
+            }
 
-        // Prio 3: non captures
-        if(previousPieceOnPosition == null){
 
-        }
+
+
+
 
 
         return value;
@@ -124,7 +130,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(currentState, opponentAttack, false);
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
 
-        sortMoves(followupStates,lastMovedPiece,currentState); // TODO hier
+        sortMoves(followupStates,lastMovedPiece,currentState,opponentAttack); // TODO hier
 
         if (currentState.isWhitePlayerMove()) {
             int bestValue = Integer.MIN_VALUE;

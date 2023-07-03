@@ -130,7 +130,7 @@ public class Evaluation {
             case BLACK_QUEEN:
                 return -queenPositionValues[matrixRow][matrixColumn];
         }
-        return -1; // TODO
+        return -1;
     }
 
     public static int getAbsolutePieceValue(Piece piece){

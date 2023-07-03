@@ -1,6 +1,7 @@
 package com.nghood.simplechess.model;
 
 
+import com.nghood.simplechess.evaluation.Evaluation;
 import lombok.Data;
 
 /**
@@ -23,12 +24,16 @@ public class AttackBoardState {
     };
 
     public void setFieldUnderAttack(int row, int column,Piece piece){
-        int pieceValue = 1; // TODO debug
+        int pieceValue = Evaluation.getAbsolutePieceValue(piece);
         attackStates[row][column] = pieceValue;
     }
 
     public boolean isFieldUnderAttack(int row, int column){
         return attackStates[row][column] != -1;
+    }
+
+    public int getAttackValue(int row, int column ){
+        return attackStates[row][column];
     }
 
 
