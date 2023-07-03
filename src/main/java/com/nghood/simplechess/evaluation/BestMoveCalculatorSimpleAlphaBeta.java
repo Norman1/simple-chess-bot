@@ -12,9 +12,11 @@ import java.util.List;
 public class BestMoveCalculatorSimpleAlphaBeta implements BestMoveCalculation {
 
     private static final int MAX_DEPTH = 4;
+    private int amountTraversedNodes = 0;
 
     @Override
     public Tuple2<String, BoardState> calculateBestMove(BoardState initialState) {
+        long startTime = System.currentTimeMillis();
         FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState,null,true);
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState,opponentFollowup.getFollowupStates());
 
@@ -23,8 +25,11 @@ public class BestMoveCalculatorSimpleAlphaBeta implements BestMoveCalculation {
         int idx = minimax0(followupStates, initialState);
         var bestFollowup = followupStates.get(idx);
         String moveString = MoveTransformer.getMove(bestFollowup.getT1(), bestFollowup.getT2(), bestFollowup.getT3(), bestFollowup.getT4());
+        long endTime = System.currentTimeMillis();
+        long timeSpent = (endTime - startTime) / 1000;
+        System.out.println("Time spent: " + timeSpent + " seconds");
+        System.out.println("Traversed nodes: "+amountTraversedNodes);
         return Tuples.of(moveString, bestFollowup.getT6());
-
     }
 
     // returns the index of the best state
@@ -47,6 +52,7 @@ public class BestMoveCalculatorSimpleAlphaBeta implements BestMoveCalculation {
 
 
     public int alphaBeta(BoardState currentState, int currentDepth, int alpha, int beta) {
+        amountTraversedNodes++;
         if (currentDepth == 0) {
             return Evaluation.getBoardValue(currentState);
         }

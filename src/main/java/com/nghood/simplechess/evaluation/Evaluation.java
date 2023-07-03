@@ -133,6 +133,11 @@ public class Evaluation {
         return -1; // TODO
     }
 
+    public static int getAbsolutePieceValue(Piece piece){
+        int pieceValue = getPieceValue(piece);
+        return Math.abs(pieceValue);
+    }
+
     private static int getPieceValue(Piece piece){
         if(piece == null){
             return 0;
