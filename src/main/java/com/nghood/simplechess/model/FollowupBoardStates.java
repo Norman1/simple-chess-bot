@@ -25,6 +25,11 @@ public class FollowupBoardStates {
         if(invertCurrentPlayer){
             isWhitePlayerMove = !isWhitePlayerMove;
         }
+        if(isKingLost(isWhitePlayerMove)){
+            return;
+        }
+
+
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
                 Piece piece = initialState.getChessBoard()[row][column];
@@ -99,6 +104,26 @@ public class FollowupBoardStates {
         }
         setKingAndRookMovements(followupStates);
         followupStates.forEach(followup -> followup.getT6().nextMove());
+    }
+
+    // we allow king captures but then there are no followup states for the player having lost his king.
+    private boolean isKingLost(boolean checkWhiteKing){
+        boolean kingPresent = false;
+        Piece[][] board = initialState.getChessBoard();
+        for(int row = 0; row < 8; row++){
+            for(int column = 0; column < 8; column++){
+                if(board[row][column] != null){
+                    if(checkWhiteKing &&board[row][column] == Piece.WHITE_KING){
+                        kingPresent = true;
+                    }
+                    else if(!checkWhiteKing &&board[row][column] == Piece.BLACK_KING){
+                        kingPresent = true;
+                    }
+                }
+            }
+        }
+
+        return !kingPresent;
     }
 
     public FollowupBoardStates(BoardState initialState) {
