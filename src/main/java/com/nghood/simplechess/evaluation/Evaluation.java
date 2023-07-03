@@ -10,7 +10,7 @@ public class Evaluation {
     private static final int BISHOP_VALUE = 330;
     private static final int ROOK_VALUE = 500;
     private static final int QUEEN_VALUE = 900;
-    private static final int KING_VALUE = 20000;
+    private static final int KING_VALUE = 100000;
 
 
 

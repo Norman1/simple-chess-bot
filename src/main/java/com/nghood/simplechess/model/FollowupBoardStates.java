@@ -58,37 +58,37 @@ public class FollowupBoardStates {
                         break;
                     case BLACK_PAWN:
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleBlackPawn(row,column));
+                            followupStates.addAll(handleBlackPawn(row, column));
                         }
                         break;
                     case WHITE_BISHOP:
-                        if(isWhitePlayerMove){
-                            followupStates.addAll(handleBishop(row,column,piece));
+                        if (isWhitePlayerMove) {
+                            followupStates.addAll(handleBishop(row, column, piece));
                         }
                         break;
                     case BLACK_BISHOP:
-                        if(!isWhitePlayerMove){
-                            followupStates.addAll(handleBishop(row,column,piece));
+                        if (!isWhitePlayerMove) {
+                            followupStates.addAll(handleBishop(row, column, piece));
                         }
                         break;
                     case WHITE_QUEEN:
-                        if(isWhitePlayerMove){
-                            followupStates.addAll(handleQueen(row,column,piece));
+                        if (isWhitePlayerMove) {
+                            followupStates.addAll(handleQueen(row, column, piece));
                         }
                         break;
                     case BLACK_QUEEN:
-                        if(!isWhitePlayerMove){
-                            followupStates.addAll(handleQueen(row,column,piece));
+                        if (!isWhitePlayerMove) {
+                            followupStates.addAll(handleQueen(row, column, piece));
                         }
                         break;
                     case WHITE_KING:
-                        if(isWhitePlayerMove){
-                            followupStates.addAll(handleKing(row,column,piece));
+                        if (isWhitePlayerMove) {
+                            followupStates.addAll(handleKing(row, column, piece));
                         }
                         break;
                     case BLACK_KING:
-                        if(!isWhitePlayerMove){
-                            followupStates.addAll(handleKing(row,column,piece));
+                        if (!isWhitePlayerMove) {
+                            followupStates.addAll(handleKing(row, column, piece));
                         }
                         break;
                     default:
@@ -96,25 +96,46 @@ public class FollowupBoardStates {
                 }
             }
         }
+        setKingAndRookMovements(followupStates);
         followupStates.stream().forEach(followup -> followup.getT6().nextMove());
     }
 
-   // public FollowupBoardStates(BoardState initialState) {
-   //     this(initialState);
-  //  }
+    // first row, first column, second row, second column
+   // private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = new ArrayList<>();
+
+    public void setKingAndRookMovements(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates) {
+        //0,0; 0,4; 0,7; 7,0; 7,4; 7,7
+        followupStates.stream().forEach(followupState -> {
+            BoardState boardState = followupState.getT6();
+            if((followupState.getT1() == 0 && followupState.getT2() == 0) || (followupState.getT3() == 0 && followupState.getT4() == 0)){
+                boardState.setLeftWhiteRookMoved(true);
+            }
+            else if(followupState.getT1() == 0 && followupState.getT2() == 4){
+                boardState.setWhiteKingMoved(true);
+            }else if((followupState.getT1() == 0 && followupState.getT2() == 7) || (followupState.getT3() == 0 && followupState.getT4() == 7)){
+                boardState.setRightWhiteRookMoved(true);
+            }else if((followupState.getT1() == 7 && followupState.getT2() == 0) || (followupState.getT3() == 7 && followupState.getT4() == 0)){
+                boardState.setLeftBlackRookMoved(true);
+            }else if(followupState.getT1() == 7 && followupState.getT2() == 4){
+                boardState.setBlackKingMoved(true);
+            }else if((followupState.getT1() == 7 && followupState.getT2() == 7) || (followupState.getT3() == 7 && followupState.getT4() == 7)){
+                boardState.setRightBlackRookMoved(true);
+            }
+        });
+    }
 
 
-    private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleKing(int row, int column,Piece piece) {
-        Tuple2<Integer,Integer> upLeft = Tuples.of(row+1,column-1);
-        Tuple2<Integer,Integer> up = Tuples.of(row+1,column);
-        Tuple2<Integer,Integer> upRight = Tuples.of(row+1,column+1);
-        Tuple2<Integer,Integer> left = Tuples.of(row,column-1);
-        Tuple2<Integer,Integer> right = Tuples.of(row,column+1);
-        Tuple2<Integer,Integer> downLeft = Tuples.of(row-1,column-1);
-        Tuple2<Integer,Integer> down = Tuples.of(row-1,column);
-        Tuple2<Integer,Integer> downRight = Tuples.of(row-1,column+1);
-        List<Tuple2<Integer, Integer>> moveLocations = List.of(upLeft,up,upRight,left,right,downLeft,down,downRight);
-        moveLocations = removeErroneousLocations(moveLocations,piece);
+    private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleKing(int row, int column, Piece piece) {
+        Tuple2<Integer, Integer> upLeft = Tuples.of(row + 1, column - 1);
+        Tuple2<Integer, Integer> up = Tuples.of(row + 1, column);
+        Tuple2<Integer, Integer> upRight = Tuples.of(row + 1, column + 1);
+        Tuple2<Integer, Integer> left = Tuples.of(row, column - 1);
+        Tuple2<Integer, Integer> right = Tuples.of(row, column + 1);
+        Tuple2<Integer, Integer> downLeft = Tuples.of(row - 1, column - 1);
+        Tuple2<Integer, Integer> down = Tuples.of(row - 1, column);
+        Tuple2<Integer, Integer> downRight = Tuples.of(row - 1, column + 1);
+        List<Tuple2<Integer, Integer>> moveLocations = List.of(upLeft, up, upRight, left, right, downLeft, down, downRight);
+        moveLocations = removeErroneousLocations(moveLocations, piece);
 
         var followupStates = getFollowupStates(row, column, moveLocations, piece);
 
@@ -123,48 +144,55 @@ public class FollowupBoardStates {
         // white left castling
         Piece[][] board = initialState.getChessBoard();
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> castlingFollowupStates = new ArrayList<>();
-        if(kingIsWhite && !initialState.isWhiteKingMoved() && !initialState.isLeftWhiteRookMoved() && board[0][1] == null && board[0][2] == null && board[0][3] == null){
+        if (kingIsWhite && !initialState.isWhiteKingMoved() && !initialState.isLeftWhiteRookMoved() && board[0][1] == null && board[0][2] == null && board[0][3] == null) {
             Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> whiteLeftFollowup = Tuples.of(row, column, row, column - 2, Piece.WHITE_KING, initialState.getCopy());
             whiteLeftFollowup.getT6().getChessBoard()[0][0] = null;
             whiteLeftFollowup.getT6().getChessBoard()[0][4] = null;
             whiteLeftFollowup.getT6().getChessBoard()[0][2] = Piece.WHITE_KING;
             whiteLeftFollowup.getT6().getChessBoard()[0][3] = Piece.WHITE_ROOK;
+            // whiteLeftFollowup.getT6().setWhiteKingMoved(true);
+            whiteLeftFollowup.getT6().setLeftWhiteRookMoved(true);
             castlingFollowupStates.add(whiteLeftFollowup);
         }
         // white right castling
-        if(kingIsWhite && !initialState.isWhiteKingMoved() && !initialState.isRightWhiteRookMoved()  && board[0][5] == null && board[0][6] == null ){
+        if (kingIsWhite && !initialState.isWhiteKingMoved() && !initialState.isRightWhiteRookMoved() && board[0][5] == null && board[0][6] == null) {
             Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> whiteRightFollowup = Tuples.of(row, column, row, column + 2, Piece.WHITE_KING, initialState.getCopy());
             whiteRightFollowup.getT6().getChessBoard()[0][7] = null;
             whiteRightFollowup.getT6().getChessBoard()[0][4] = null;
             whiteRightFollowup.getT6().getChessBoard()[0][6] = Piece.WHITE_KING;
             whiteRightFollowup.getT6().getChessBoard()[0][5] = Piece.WHITE_ROOK;
+            // whiteRightFollowup.getT6().setWhiteKingMoved(true);
+            whiteRightFollowup.getT6().setRightWhiteRookMoved(true);
             castlingFollowupStates.add(whiteRightFollowup);
         }
 
         // black left castling
-        if(!kingIsWhite && !initialState.isBlackKingMoved() && !initialState.isLeftBlackRookMoved() && board[7][1] == null && board[7][2] == null && board[7][3] == null){
+        if (!kingIsWhite && !initialState.isBlackKingMoved() && !initialState.isLeftBlackRookMoved() && board[7][1] == null && board[7][2] == null && board[7][3] == null) {
             Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> blackLeftFollowup = Tuples.of(row, column, row, column - 2, Piece.BLACK_KING, initialState.getCopy());
             blackLeftFollowup.getT6().getChessBoard()[7][0] = null;
             blackLeftFollowup.getT6().getChessBoard()[7][4] = null;
             blackLeftFollowup.getT6().getChessBoard()[7][2] = Piece.BLACK_KING;
             blackLeftFollowup.getT6().getChessBoard()[7][3] = Piece.BLACK_ROOK;
+            //  blackLeftFollowup.getT6().setBlackKingMoved(true);
+            blackLeftFollowup.getT6().setLeftBlackRookMoved(true);
             castlingFollowupStates.add(blackLeftFollowup);
         }
 
         // black right castling
-        if(!kingIsWhite && !initialState.isBlackKingMoved() && !initialState.isRightBlackRookMoved()  && board[7][5] == null && board[7][6] == null ){
+        if (!kingIsWhite && !initialState.isBlackKingMoved() && !initialState.isRightBlackRookMoved() && board[7][5] == null && board[7][6] == null) {
             Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> blackRightFollowup = Tuples.of(row, column, row, column + 2, Piece.BLACK_KING, initialState.getCopy());
             blackRightFollowup.getT6().getChessBoard()[7][7] = null;
             blackRightFollowup.getT6().getChessBoard()[7][4] = null;
             blackRightFollowup.getT6().getChessBoard()[7][6] = Piece.BLACK_KING;
             blackRightFollowup.getT6().getChessBoard()[7][5] = Piece.BLACK_ROOK;
+            //  blackRightFollowup.getT6().setBlackKingMoved(true);
+            blackRightFollowup.getT6().setRightBlackRookMoved(true);
             castlingFollowupStates.add(blackRightFollowup);
         }
 
         followupStates.addAll(castlingFollowupStates);
         return followupStates;
     }
-
 
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBlackPawn(int row, int column) {
@@ -337,72 +365,72 @@ public class FollowupBoardStates {
     }
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleQueen(int row, int column, Piece piece) {
-        var result = handleBishop(row,column,piece);
+        var result = handleBishop(row, column, piece);
         // the isRookMoved stuff is no problem since if the queen is there the rook is gone from there
-        result.addAll(handleRook(row,column,piece));
+        result.addAll(handleRook(row, column, piece));
         return result;
     }
 
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> handleBishop(int row, int column, Piece piece) {
         List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
         // left up
-        for(int i = 1; i < 8; i++){
-            Tuple2<Integer,Integer> location = Tuples.of(row+i,column-i);
-            if(!isLocationInBounds(location)){
+        for (int i = 1; i < 8; i++) {
+            Tuple2<Integer, Integer> location = Tuples.of(row + i, column - i);
+            if (!isLocationInBounds(location)) {
                 break;
             }
-            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece)) {
                 break;
-            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
-                moveLocations.add(Tuples.of(row+i, column-i));
+            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece)) {
+                moveLocations.add(Tuples.of(row + i, column - i));
                 break;
             }
-            moveLocations.add(Tuples.of(row+i, column-i));
+            moveLocations.add(Tuples.of(row + i, column - i));
         }
 
         // right up
-        for(int i = 1; i < 8; i++){
-            Tuple2<Integer,Integer> location = Tuples.of(row+i,column +i);
-            if(!isLocationInBounds(location)){
+        for (int i = 1; i < 8; i++) {
+            Tuple2<Integer, Integer> location = Tuples.of(row + i, column + i);
+            if (!isLocationInBounds(location)) {
                 break;
             }
-            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece)) {
                 break;
-            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
-                moveLocations.add(Tuples.of(row+i, column+i));
+            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece)) {
+                moveLocations.add(Tuples.of(row + i, column + i));
                 break;
             }
-            moveLocations.add(Tuples.of(row+i, column+i));
+            moveLocations.add(Tuples.of(row + i, column + i));
         }
 
         // left down
-        for(int i = 1; i < 8; i++){
-            Tuple2<Integer,Integer> location = Tuples.of(row-i,column-i);
-            if(!isLocationInBounds(location)){
+        for (int i = 1; i < 8; i++) {
+            Tuple2<Integer, Integer> location = Tuples.of(row - i, column - i);
+            if (!isLocationInBounds(location)) {
                 break;
             }
-            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece)) {
                 break;
-            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
-                moveLocations.add(Tuples.of(row-i, column-i));
+            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece)) {
+                moveLocations.add(Tuples.of(row - i, column - i));
                 break;
             }
-            moveLocations.add(Tuples.of(row-i, column-i));
+            moveLocations.add(Tuples.of(row - i, column - i));
         }
 
         // right down
-        for(int i = 1; i < 8; i++){
-            Tuple2<Integer,Integer> location = Tuples.of(row-i,column+i);
-            if(!isLocationInBounds(location)){
+        for (int i = 1; i < 8; i++) {
+            Tuple2<Integer, Integer> location = Tuples.of(row - i, column + i);
+            if (!isLocationInBounds(location)) {
                 break;
             }
-            if(isLocationOwnedBySelf(location.getT1(),location.getT2(),piece)){
+            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece)) {
                 break;
-            }else if(isLocationOwnedByOpponent(location.getT1(),location.getT2(),piece)){
-                moveLocations.add(Tuples.of(row-i, column+i));
+            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece)) {
+                moveLocations.add(Tuples.of(row - i, column + i));
                 break;
             }
-            moveLocations.add(Tuples.of(row-i, column+i));
+            moveLocations.add(Tuples.of(row - i, column + i));
         }
 
         return getFollowupStates(row, column, moveLocations, piece);
