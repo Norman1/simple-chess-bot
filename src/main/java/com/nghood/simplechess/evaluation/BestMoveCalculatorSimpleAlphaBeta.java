@@ -1,9 +1,7 @@
 package com.nghood.simplechess.evaluation;
 
 import com.nghood.simplechess.io.MoveTransformer;
-import com.nghood.simplechess.model.BoardState;
-import com.nghood.simplechess.model.FollowupBoardStates;
-import com.nghood.simplechess.model.Piece;
+import com.nghood.simplechess.model.*;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple6;
 import reactor.util.function.Tuples;
@@ -17,7 +15,10 @@ public class BestMoveCalculatorSimpleAlphaBeta implements BestMoveCalculation {
 
     @Override
     public Tuple2<String, BoardState> calculateBestMove(BoardState initialState) {
-        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
+        FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState,null,true);
+        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState,opponentFollowup.getFollowupStates());
+
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState,opponentAttack,false);
         var followupStates = followupBoardStates.getFollowupStates();
         int idx = minimax0(followupStates, initialState);
         var bestFollowup = followupStates.get(idx);
@@ -50,8 +51,14 @@ public class BestMoveCalculatorSimpleAlphaBeta implements BestMoveCalculation {
             return Evaluation.getBoardValue(currentState);
         }
 
-        FollowupBoardStates followupBoardStates = new FollowupBoardStates(currentState);
+        FollowupBoardStates opponentFollowup = new FollowupBoardStates(currentState,null,true);
+        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(currentState,opponentFollowup.getFollowupStates());
+
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(currentState,opponentAttack,false);
         var followupStates = followupBoardStates.getFollowupStates();
+
+      //  FollowupBoardStates followupBoardStates = new FollowupBoardStates(currentState);
+      //  var followupStates = followupBoardStates.getFollowupStates();
         if (currentState.isWhitePlayerMove()) {
             int bestValue = Integer.MIN_VALUE;
             for (var followupState : followupStates) {

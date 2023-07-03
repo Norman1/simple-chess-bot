@@ -13,7 +13,7 @@ import reactor.util.function.Tuple2;
  */
 public class CompeteAgainstSelf {
 
-    private static final int MAX_TURNS = 30;
+    private static final int MAX_TURNS = 100;
 
     private static void compete(){
         BoardState boardState = new BoardState();
