@@ -3,9 +3,11 @@ package com.nghood.simplechess.evaluation;
 import com.nghood.simplechess.io.MoveTransformer;
 import com.nghood.simplechess.model.*;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple4;
 import reactor.util.function.Tuple6;
 import reactor.util.function.Tuples;
 
+import java.util.ArrayList;
 import java.util.List;
 
 // simple minimax here
@@ -86,12 +88,6 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
                     value -= movingPieceValue;
             }
 
-
-
-
-
-
-
         return value;
 
     }
@@ -101,9 +97,18 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         int bestScore = initialState.isWhitePlayerMove() ? Integer.MIN_VALUE : Integer.MAX_VALUE;
         int out = 0;
         for (int i = 0; i < depth1States.size(); i++) {
-            int score = alphaBeta(depth1States.get(i).getT6(), MAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE,null);
-            if ((initialState.isWhitePlayerMove() && score > bestScore) || (!initialState.isWhitePlayerMove() && score < bestScore)) {
-                bestScore = score;
+
+            AlphaBetaTree alphaBetaTree = new AlphaBetaTree();
+            alphaBetaTree.setCurrentDepth(MAX_DEPTH);
+            alphaBetaTree.setCurrentState(depth1States.get(i).getT6());
+            alphaBetaTree.setAlpha(Integer.MIN_VALUE);
+            alphaBetaTree.setBeta(Integer.MAX_VALUE);
+            alphaBeta2(alphaBetaTree);
+
+
+           // int score = alphaBeta(depth1States.get(i).getT6(), MAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE,null);
+            if ((initialState.isWhitePlayerMove() && alphaBetaTree.getTreeValue() > bestScore) || (!initialState.isWhitePlayerMove() && alphaBetaTree.getTreeValue() < bestScore)) {
+                bestScore = alphaBetaTree.getTreeValue();
                 out = i;
 
             }
@@ -118,46 +123,103 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return out;
     }
 
-
-    public int alphaBeta(BoardState currentState, int currentDepth, int alpha, int beta, Tuple2<Integer,Integer>lastMovedPiece) {
-        amountTraversedNodes++;
-        if (currentDepth == 0) {
-            return Evaluation.getBoardValue(currentState);
+    public void alphaBeta2(AlphaBetaTree alphaBetaTree){
+        amountTraversedNodes ++;
+        if(alphaBetaTree.getCurrentDepth() == 0){
+            alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
+            return;
         }
-
-        FollowupBoardStates opponentFollowup = new FollowupBoardStates(currentState, null, true);
-        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(currentState, opponentFollowup.getFollowupStates());
-        FollowupBoardStates followupBoardStates = new FollowupBoardStates(currentState, opponentAttack, false);
+        FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
+        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
+        sortMoves(followupStates, alphaBetaTree.getLastMovedPiece(),alphaBetaTree.getCurrentState(),opponentAttack);
 
-        sortMoves(followupStates,lastMovedPiece,currentState,opponentAttack); // TODO hier
-
-        if (currentState.isWhitePlayerMove()) {
+        if (alphaBetaTree.getCurrentState().isWhitePlayerMove()) {
             int bestValue = Integer.MIN_VALUE;
             for (var followupState : followupStates) {
-                int value = alphaBeta(followupState.getT6(), currentDepth - 1, alpha, beta,extractLastMovedPiece(followupState));
+                AlphaBetaTree childTree = new AlphaBetaTree();
+                alphaBetaTree.getChildTrees().add(childTree);
+                childTree.setBeta(alphaBetaTree.getBeta());
+                childTree.setAlpha(alphaBetaTree.getAlpha());
+                childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth()-1);
+                childTree.setCurrentState(followupState.getT6());
+                childTree.setLastMovedPiece(extractLastMovedPiece(followupState));
+                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(),followupState.getT2(),followupState.getT3(),followupState.getT4()));
+                alphaBeta2(childTree);
+                int value = childTree.getTreeValue();
                 bestValue = Math.max(bestValue, value);
-                alpha = Math.max(alpha, bestValue);
-                if (beta <= alpha) {
+                alphaBetaTree.setTreeValue(bestValue);
+                alphaBetaTree.setAlpha(Math.max(alphaBetaTree.getAlpha(), bestValue));
+                if (alphaBetaTree.getBeta() <= alphaBetaTree.getAlpha()) {
                     break;
                 }
             }
-            return bestValue;
         } else {
             int bestValue = Integer.MAX_VALUE;
+
             for (var followupState : followupStates) {
-                int value = alphaBeta(followupState.getT6(), currentDepth - 1, alpha, beta,extractLastMovedPiece(followupState));
+                AlphaBetaTree childTree = new AlphaBetaTree();
+                alphaBetaTree.getChildTrees().add(childTree);
+                childTree.setBeta(alphaBetaTree.getBeta());
+                childTree.setAlpha(alphaBetaTree.getAlpha());
+                childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth()-1);
+                childTree.setCurrentState(followupState.getT6());
+                childTree.setLastMovedPiece(extractLastMovedPiece(followupState));
+                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(),followupState.getT2(),followupState.getT3(),followupState.getT4()));
+                alphaBeta2(childTree);
+                int value = childTree.getTreeValue();
                 bestValue = Math.min(bestValue, value);
-                beta = Math.min(beta, bestValue);
-                if (beta <= alpha) {
+                alphaBetaTree.setTreeValue(bestValue);
+                alphaBetaTree.setBeta(Math.min(alphaBetaTree.getBeta(), bestValue));
+
+                if (alphaBetaTree.getBeta() <= alphaBetaTree.getAlpha()) {
                     break;
                 }
             }
-            return bestValue;
         }
+
 
 
     }
 
+
+//    public int alphaBeta(BoardState currentState, int currentDepth, int alpha, int beta, Tuple2<Integer,Integer>lastMovedPiece) {
+//        amountTraversedNodes++;
+//        if (currentDepth == 0) {
+//            return Evaluation.getBoardValue(currentState);
+//        }
+//
+//        FollowupBoardStates opponentFollowup = new FollowupBoardStates(currentState, null, true);
+//        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(currentState, opponentFollowup.getFollowupStates());
+//        FollowupBoardStates followupBoardStates = new FollowupBoardStates(currentState, opponentAttack, false);
+//        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
+//
+//        sortMoves(followupStates,lastMovedPiece,currentState,opponentAttack);
+//
+//        if (currentState.isWhitePlayerMove()) {
+//            int bestValue = Integer.MIN_VALUE;
+//            for (var followupState : followupStates) {
+//                int value = alphaBeta(followupState.getT6(), currentDepth - 1, alpha, beta,extractLastMovedPiece(followupState));
+//                bestValue = Math.max(bestValue, value);
+//                alpha = Math.max(alpha, bestValue);
+//                if (beta <= alpha) {
+//                    break;
+//                }
+//            }
+//            return bestValue;
+//        } else {
+//            int bestValue = Integer.MAX_VALUE;
+//            for (var followupState : followupStates) {
+//                int value = alphaBeta(followupState.getT6(), currentDepth - 1, alpha, beta,extractLastMovedPiece(followupState));
+//                bestValue = Math.min(bestValue, value);
+//                beta = Math.min(beta, bestValue);
+//                if (beta <= alpha) {
+//                    break;
+//                }
+//            }
+//            return bestValue;
+//        }
+//    }
 
 }
