@@ -8,11 +8,12 @@ import reactor.util.function.Tuple6;
 import reactor.util.function.Tuples;
 
 import java.util.List;
+import java.util.Optional;
 
 // simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 5;
+    private static final int MAX_DEPTH = 3;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
@@ -22,7 +23,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState, null, true);
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState, opponentFollowup.getFollowupStates());
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState, opponentAttack, false);
-        var followupStates = followupBoardStates.getFollowupStates();
+      //  var followupStates = followupBoardStates.getFollowupStates();
         // int idx = minimax0(followupStates, initialState);
 
 
@@ -33,7 +34,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
         // TODO debug, test if 6 depth helps
         if(!initialState.isWhitePlayerMove()){
-            alphaBetaTree.setCurrentDepth(MAX_DEPTH+1);
+            alphaBetaTree.setCurrentDepth(MAX_DEPTH+3);
         }
 
         alphaBetaTree.setCurrentState(initialState);
@@ -42,9 +43,15 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         alphaBeta(alphaBetaTree);
 
         int treeValue = alphaBetaTree.getTreeValue();
-        AlphaBetaTree bestChildTree = alphaBetaTree.getChildTrees().stream().filter(child -> child.getTreeValue() == treeValue).findAny().get();
-        Tuple4<Integer, Integer, Integer, Integer> moves = bestChildTree.getMovesToGetToPosition();
-        String moveString = MoveTransformer.getMove(moves.getT1(), moves.getT2(), moves.getT3(), moves.getT4());
+        Optional<AlphaBetaTree> bestChildTreeOpt = alphaBetaTree.getChildTrees().stream().filter(child -> child.getTreeValue() == treeValue).findAny();
+
+       String moveString = null;
+        AlphaBetaTree bestChildTree = null;
+        if(bestChildTreeOpt.isPresent()){
+            bestChildTree = bestChildTreeOpt.get();
+            Tuple4<Integer, Integer, Integer, Integer> moves = bestChildTree.getMovesToGetToPosition();
+            moveString = MoveTransformer.getMove(moves.getT1(), moves.getT2(), moves.getT3(), moves.getT4());
+        }
         long endTime = System.currentTimeMillis();
         long timeSpent = (endTime - startTime) / 1000;
         System.out.println("Time spent: " + timeSpent + " seconds");
@@ -52,6 +59,10 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         allTraversedNoded += amountTraversedNodes;
         System.out.println("All traversed nodes: " + allTraversedNoded);
         System.out.println("MiniMax value: "+treeValue);
+        if(bestChildTreeOpt.isEmpty()){
+            return null;
+        }
+
         System.out.println("Immediate value: "+Evaluation.getBoardValue(bestChildTree.getCurrentState()));
 
         return Tuples.of(moveString, bestChildTree.getCurrentState());
@@ -119,9 +130,25 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return out;
     }
 
+    private boolean isKingTaken(Piece[][] board){
+        int kingCount = 0;
+        for(int row = 0; row < 8; row++){
+            for(int column = 0; column < 8; column++){
+                if(board[row][column] != null){
+                    if(board[row][column] == Piece.WHITE_KING || board[row][column] ==Piece.BLACK_KING){
+                        kingCount++;
+                    }
+                }
+            }
+        }
+
+        return kingCount != 2;
+    }
+
+
     public void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
-        if (alphaBetaTree.getCurrentDepth() == 0) {
+        if (alphaBetaTree.getCurrentDepth() == 0 || isKingTaken(alphaBetaTree.getCurrentState().getChessBoard())) {
             alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
             return;
         }

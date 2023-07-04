@@ -103,7 +103,7 @@ public class FollowupBoardStates {
             }
         }
         setKingAndRookMovements(followupStates);
-        followupStates.forEach(followup -> followup.getT6().nextMove()); // TODO : en passant does not get deleted???
+        followupStates.forEach(followup -> followup.getT6().nextMove());
 
         // remove enpassantvulnerable pawns from the previous player
         // after the turn it is the opposites players turn.
@@ -122,7 +122,33 @@ public class FollowupBoardStates {
 
         });
 
+        // if there is a move where we can capture the opponent king, remove all other moves
+       var kingTakeStateOpt =  followupStates.stream().filter(follow -> isKingTaken(follow.getT6().getChessBoard())).findAny();
+        if(kingTakeStateOpt.isPresent()){
+            var kingTakeState = kingTakeStateOpt.get();
+            followupStates.clear();
+            followupStates.add(kingTakeState);
+        }
+
     }
+
+    private boolean isKingTaken(Piece[][] board){
+        int kingCount = 0;
+        for(int row = 0; row < 8; row++){
+            for(int column = 0; column < 8; column++){
+                if(board[row][column] != null){
+                    if(board[row][column] == Piece.WHITE_KING || board[row][column] ==Piece.BLACK_KING){
+                        kingCount++;
+                    }
+                }
+            }
+        }
+
+        return kingCount != 2;
+    }
+
+
+
 
     // we allow king captures but then there are no followup states for the player having lost his king.
     private boolean isKingLost(boolean checkWhiteKing){

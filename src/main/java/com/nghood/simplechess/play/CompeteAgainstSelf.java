@@ -29,6 +29,9 @@ public class CompeteAgainstSelf {
            // BestMoveCalculation bestMoveCalculator = new BestMoveCalculatorSimpleAlphaBeta();
             BestMoveCalculation bestMoveCalculator = new BestMoveCalculatorAlphaBeta();
             Tuple2<String,BoardState> bestMove = bestMoveCalculator.calculateBestMove(boardState);
+            if(bestMove == null){
+                break;
+            }
             System.out.println("Performing move "+bestMove.getT1());
             boardPrinter.printBoard(bestMove.getT2().getChessBoard());
             boardState = bestMove.getT2();
