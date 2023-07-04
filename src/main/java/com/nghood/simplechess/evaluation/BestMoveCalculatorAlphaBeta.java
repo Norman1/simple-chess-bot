@@ -10,11 +10,12 @@ import reactor.util.function.Tuples;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 // simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 5;
+    private static final int MAX_DEPTH = 1;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
@@ -161,35 +162,65 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return kingCount != 2;
     }
 
-    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups, AttackBoardState opponentAttacks) {
-        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = new ArrayList<>();
-        for (var followup : followups) {
-            Piece[][] board = followup.getT6().getChessBoard();
-            for (int row = 0; row < 8; row++) {
-                for (int column = 0; column < 8; column++) {
-                    if (opponentAttacks.isFieldUnderAttack(row, column) && board[row][column] != null) {
-                        boolean isWhitePlayerMove = followup.getT6().isWhitePlayerMove();
-                        boolean isWhitePiece = board[row][column].ordinal() <= 5;
-                        if ((isWhitePlayerMove && !isWhitePiece) || (!isWhitePlayerMove && isWhitePiece)) {
-                            nonQuietFollowups.add(followup);
-                        }
-                    }
+//    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups, AttackBoardState opponentAttacks) {
+//        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = new ArrayList<>();
+//        f: for (var followup : followups) {
+//            Piece[][] board = followup.getT6().getChessBoard();
+//            for (int row = 0; row < 8; row++) {
+//                for (int column = 0; column < 8; column++) {
+//                    if (opponentAttacks.isFieldUnderAttack(row, column) && board[row][column] != null) {
+//                        boolean isWhitePlayerMove = followup.getT6().isWhitePlayerMove();
+//                        boolean isWhitePiece = board[row][column].ordinal() <= 5;
+//                        if ((isWhitePlayerMove && !isWhitePiece) || (!isWhitePlayerMove && isWhitePiece)) {
+//                            nonQuietFollowups.add(followup);
+//                            continue f;
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//
+//        return nonQuietFollowups;
+//    }
+
+    private int countPieces(BoardState boardState) {
+        int pieceCount = 0;
+        for (int row = 0; row < 8; row++) {
+            for (int column = 0; column < 8; column++) {
+                if (boardState.getChessBoard()[row][column] != null) {
+                    pieceCount++;
                 }
             }
         }
-
-        return nonQuietFollowups;
+        return pieceCount;
     }
 
+    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups, BoardState currentState) {
+        int pieceCount = countPieces(currentState);
+        return followups.stream().filter(followup -> countPieces(followup.getT6()) != pieceCount).collect(Collectors.toList());
+    }
 
-    public void alphaBeta(AlphaBetaTree alphaBetaTree) {
+    private int searchQuietPositions(AlphaBetaTree alphaBetaTree) {
+        amountTraversedNodes++;
+        FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
+        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
+        FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
+        var followupStates = followupBoardStates.getFollowupStates();
+        var nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
+        System.out.println(followupStates.size() + " --> " + nonQuietFollowups.size());
+        return 0;
+    }
+
+    private void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
         FollowupBoardStates opponentFollowup;
-        AttackBoardState opponentAttack = null;
+        AttackBoardState opponentAttack;
         FollowupBoardStates followupBoardStates;
-        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = null;
+        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates;
         if (alphaBetaTree.getCurrentDepth() <= 0 || isKingTaken(alphaBetaTree.getCurrentState().getChessBoard())) {
+           // searchQuietPositions(alphaBetaTree);
             alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
+            // alphaBetaTree.setTreeValue(searchQuietPositions(alphaBetaTree));
             return;
         }
 
