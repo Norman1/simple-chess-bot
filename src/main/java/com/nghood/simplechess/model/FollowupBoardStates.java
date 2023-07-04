@@ -103,7 +103,25 @@ public class FollowupBoardStates {
             }
         }
         setKingAndRookMovements(followupStates);
-        followupStates.forEach(followup -> followup.getT6().nextMove());
+        followupStates.forEach(followup -> followup.getT6().nextMove()); // TODO : en passant does not get deleted???
+
+        // remove enpassantvulnerable pawns from the previous player
+        // after the turn it is the opposites players turn.
+        followupStates.forEach(followup -> {
+            Tuple2<Integer, Integer> enPassantVulnerablePawn =  followup.getT6().getEnPassantVulnerablePawn();
+            if(enPassantVulnerablePawn != null){
+                boolean isWhitePlayerTurn = followup.getT6().isWhitePlayerMove();
+                Piece enPassantPiece = followup.getT6().getChessBoard()[enPassantVulnerablePawn.getT1()][enPassantVulnerablePawn.getT2()];
+                boolean isWhiteEnPassantPawn = enPassantPiece == Piece.WHITE_PAWN;
+                boolean isBlackEnPassantPawn = enPassantPiece == Piece.BLACK_PAWN;
+                if((isWhitePlayerTurn && isBlackEnPassantPawn) || (!isWhitePlayerTurn && isWhiteEnPassantPawn)){
+                }else{
+                    followup.getT6().setEnPassantVulnerablePawn(null);
+                }
+            }
+
+        });
+
     }
 
     // we allow king captures but then there are no followup states for the player having lost his king.
@@ -565,13 +583,11 @@ public class FollowupBoardStates {
         return getFollowupStates(row, column, jumpLocations, piece);
     }
 
-
     private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getFollowupStates(int initialRow,
-                                                                                                  int initialColumn, List<Tuple2<Integer, Integer>> moveLocations, Piece piece) {
+             int initialColumn, List<Tuple2<Integer, Integer>> moveLocations, Piece piece) {
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> out = new ArrayList<>();
         for (Tuple2<Integer, Integer> moveLocation : moveLocations) {
             BoardState copy = initialState.getCopy();
-            // TODO copy has t move to next move
             copy.getChessBoard()[initialRow][initialColumn] = null;
             copy.getChessBoard()[moveLocation.getT1()][moveLocation.getT2()] = piece;
             Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> newSituation = Tuples.of(

@@ -112,14 +112,14 @@ public class FollowupBoardStatesTest {
 
 
     private final Piece[][] whiteEnPassantTest = {
-            {null, null, null, null, null, null, null, null},
+            {null, null, null, null, null, null, null, WHITE_KING},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {WHITE_PAWN, BLACK_PAWN, WHITE_PAWN, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
             {null, null, null, null, null, null, null, null},
-            {null, null, null, null, null, null, null, null}};
+            {null, null, null, null, null, null, null, BLACK_KING}};
 
     private final Piece[][] blackEnPassantTest = {
             {null, null, null, null, null, null, null, null},
@@ -280,8 +280,11 @@ public class FollowupBoardStatesTest {
     public void testWhiteEnPassant() {
         BoardState initialState = new BoardState();
         initialState.setChessBoard(whiteEnPassantTest);
+        initialState.setWhitePlayerMove(true);
         initialState.setEnPassantVulnerablePawn(Tuples.of(4,1));
+
         BoardPrinter boardPrinter = new BoardPrinter();
+        boardPrinter.printBoard(initialState.getChessBoard());
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState);
         var followupStates = followupBoardStates.getFollowupStates();
         System.out.println(followupStates.size());

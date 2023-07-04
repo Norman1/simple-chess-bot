@@ -10,7 +10,7 @@ import reactor.util.function.Tuple2;
  */
 public class CompeteAgainstSelf {
 
-    private static final int MAX_TURNS = 5;
+    private static final int MAX_TURNS = 500;
 
     private static void compete(){
         long startTime = System.currentTimeMillis();
