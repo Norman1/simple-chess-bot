@@ -13,7 +13,7 @@ import java.util.List;
 // simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 4;
+    private static final int MAX_DEPTH = 5;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
@@ -22,19 +22,43 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         long startTime = System.currentTimeMillis();
         FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState, null, true);
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState, opponentFollowup.getFollowupStates());
-
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState, opponentAttack, false);
         var followupStates = followupBoardStates.getFollowupStates();
-        int idx = minimax0(followupStates, initialState);
-        var bestFollowup = followupStates.get(idx);
-        String moveString = MoveTransformer.getMove(bestFollowup.getT1(), bestFollowup.getT2(), bestFollowup.getT3(), bestFollowup.getT4());
+        // int idx = minimax0(followupStates, initialState);
+
+
+        AlphaBetaTree alphaBetaTree = new AlphaBetaTree();
+        alphaBetaTree.setCurrentDepth(MAX_DEPTH);
+        alphaBetaTree.setCurrentState(initialState);
+        alphaBetaTree.setAlpha(Integer.MIN_VALUE);
+        alphaBetaTree.setBeta(Integer.MAX_VALUE);
+        alphaBeta2(alphaBetaTree);
+
+        int treeValue = alphaBetaTree.getTreeValue();
+        AlphaBetaTree bestChildTree = alphaBetaTree.getChildTrees().stream().filter(child -> child.getTreeValue() == treeValue).findAny().get();
+        Tuple4<Integer, Integer, Integer, Integer> moves = bestChildTree.getMovesToGetToPosition();
+        String moveString = MoveTransformer.getMove(moves.getT1(), moves.getT2(), moves.getT3(), moves.getT4());
         long endTime = System.currentTimeMillis();
         long timeSpent = (endTime - startTime) / 1000;
         System.out.println("Time spent: " + timeSpent + " seconds");
         System.out.println("Traversed nodes: " + amountTraversedNodes);
         allTraversedNoded += amountTraversedNodes;
         System.out.println("All traversed nodes: " + allTraversedNoded);
-        return Tuples.of(moveString, bestFollowup.getT6());
+        return Tuples.of(moveString, bestChildTree.getCurrentState());
+
+//        System.out.println("Tree value"+treeValue);
+//
+//        var bestFollowup = followupStates.get(0);
+//
+//
+//        String moveString = MoveTransformer.getMove(bestFollowup.getT1(), bestFollowup.getT2(), bestFollowup.getT3(), bestFollowup.getT4());
+//        long endTime = System.currentTimeMillis();
+//        long timeSpent = (endTime - startTime) / 1000;
+//        System.out.println("Time spent: " + timeSpent + " seconds");
+//        System.out.println("Traversed nodes: " + amountTraversedNodes);
+//        allTraversedNoded += amountTraversedNodes;
+//        System.out.println("All traversed nodes: " + allTraversedNoded);
+//        return Tuples.of(moveString, bestFollowup.getT6());
     }
 
 
@@ -45,9 +69,8 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
      * capturing is not negative.
      * 3. For each non-capture add a subtraction if we are moving to a field which is under opponent attack from a piece which is worth less than our piece. Evaluating
      * the board value seems too expensive and does not seem to give benefits.
-     *
      */
-    private void sortMoves(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates, Tuple2<Integer,Integer> lastMovedPiece,BoardState initialState,AttackBoardState attackBoardState) {
+    private void sortMoves(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates, Tuple2<Integer, Integer> lastMovedPiece, BoardState initialState, AttackBoardState attackBoardState) {
         /* Case no sort: 16 seconds, All traversed nodes: 6678706
          * Add sort last capture (no least valuable piece yet): 13 seconds All traversed nodes: 4192084
          * Add capturing pieces: 11 seconds, All traversed nodes: 2358361
@@ -55,21 +78,21 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
          */
 
 
-       followupStates.sort((followup1,followup2) -> Integer.compare(getSortValue(followup2,lastMovedPiece,initialState,attackBoardState),getSortValue(followup1,lastMovedPiece,initialState,attackBoardState)));
+        followupStates.sort((followup1, followup2) -> Integer.compare(getSortValue(followup2, lastMovedPiece, initialState, attackBoardState), getSortValue(followup1, lastMovedPiece, initialState, attackBoardState)));
     }
 
     // first row, first column, second row, second column
-    private int getSortValue(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> followupState, Tuple2<Integer,Integer> lastMovedPiece,BoardState initialState,AttackBoardState attackBoardState){
+    private int getSortValue(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> followupState, Tuple2<Integer, Integer> lastMovedPiece, BoardState initialState, AttackBoardState attackBoardState) {
         // we fail to consider stuff like en passant captures but whatever
         int value = 0;
         // Prio 1: last moved piece captures
-        if(lastMovedPiece != null){
+        if (lastMovedPiece != null) {
             boolean isLastMoveCapture = followupState.getT3() == lastMovedPiece.getT1() && followupState.getT4() == lastMovedPiece.getT2();
-            if(isLastMoveCapture){
+            if (isLastMoveCapture) {
                 value += 1000000;
                 Piece capturingPiece = followupState.getT6().getChessBoard()[followupState.getT3()][followupState.getT4()];
                 int capturingPieceValue = Evaluation.getAbsolutePieceValue(capturingPiece);
-               value -= capturingPieceValue;
+                value -= capturingPieceValue;
             }
         }
 
@@ -77,55 +100,55 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         Piece previousPieceOnPosition = initialState.getChessBoard()[followupState.getT3()][followupState.getT4()];
         Piece movingPiece = followupState.getT6().getChessBoard()[followupState.getT3()][followupState.getT4()];
         int movingPieceValue = Evaluation.getAbsolutePieceValue(movingPiece);
-        if(previousPieceOnPosition != null){
+        if (previousPieceOnPosition != null) {
             int capturedPieceValue = Evaluation.getAbsolutePieceValue(previousPieceOnPosition);
-            value += 10* capturedPieceValue;
+            value += 10 * capturedPieceValue;
             value -= movingPieceValue;
             // Prio 3: non captures (TODO: prunes little branches and makes the bot even a tiny bit slower)
         }
-            int opponentAttackValue = attackBoardState.getAttackValue(followupState.getT3(),followupState.getT4());
-            if(opponentAttackValue != -1){
-                    value -= movingPieceValue;
-            }
+        int opponentAttackValue = attackBoardState.getAttackValue(followupState.getT3(), followupState.getT4());
+        if (opponentAttackValue != -1) {
+            value -= movingPieceValue;
+        }
 
         return value;
 
     }
 
     // returns the index of the best state
-    public int minimax0(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> depth1States, BoardState initialState) {
-        int bestScore = initialState.isWhitePlayerMove() ? Integer.MIN_VALUE : Integer.MAX_VALUE;
-        int out = 0;
-        for (int i = 0; i < depth1States.size(); i++) {
+//    public int minimax0(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> depth1States, BoardState initialState) {
+//        int bestScore = initialState.isWhitePlayerMove() ? Integer.MIN_VALUE : Integer.MAX_VALUE;
+//        int out = 0;
+//        for (int i = 0; i < depth1States.size(); i++) {
+//
+//            AlphaBetaTree alphaBetaTree = new AlphaBetaTree();
+//            alphaBetaTree.setCurrentDepth(MAX_DEPTH);
+//            alphaBetaTree.setCurrentState(depth1States.get(i).getT6());
+//            alphaBetaTree.setAlpha(Integer.MIN_VALUE);
+//            alphaBetaTree.setBeta(Integer.MAX_VALUE);
+//            alphaBeta2(alphaBetaTree);
+//
+//
+//           // int score = alphaBeta(depth1States.get(i).getT6(), MAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE,null);
+//            if ((initialState.isWhitePlayerMove() && alphaBetaTree.getTreeValue() > bestScore) || (!initialState.isWhitePlayerMove() && alphaBetaTree.getTreeValue() < bestScore)) {
+//                bestScore = alphaBetaTree.getTreeValue();
+//                out = i;
+//
+//            }
+//        }
+//        System.out.println("Move immediate value: " + Evaluation.getBoardValue(depth1States.get(out).getT6()));
+//        System.out.println("Minimax value: " + bestScore);
+//        return out;
+//    }
 
-            AlphaBetaTree alphaBetaTree = new AlphaBetaTree();
-            alphaBetaTree.setCurrentDepth(MAX_DEPTH);
-            alphaBetaTree.setCurrentState(depth1States.get(i).getT6());
-            alphaBetaTree.setAlpha(Integer.MIN_VALUE);
-            alphaBetaTree.setBeta(Integer.MAX_VALUE);
-            alphaBeta2(alphaBetaTree);
-
-
-           // int score = alphaBeta(depth1States.get(i).getT6(), MAX_DEPTH, Integer.MIN_VALUE, Integer.MAX_VALUE,null);
-            if ((initialState.isWhitePlayerMove() && alphaBetaTree.getTreeValue() > bestScore) || (!initialState.isWhitePlayerMove() && alphaBetaTree.getTreeValue() < bestScore)) {
-                bestScore = alphaBetaTree.getTreeValue();
-                out = i;
-
-            }
-        }
-        System.out.println("Move immediate value: " + Evaluation.getBoardValue(depth1States.get(out).getT6()));
-        System.out.println("Minimax value: " + bestScore);
+    private Tuple2<Integer, Integer> extractLastMovedPiece(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> state) {
+        Tuple2<Integer, Integer> out = Tuples.of(state.getT3(), state.getT4());
         return out;
     }
 
-    private Tuple2<Integer,Integer> extractLastMovedPiece(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> state){
-        Tuple2<Integer,Integer> out = Tuples.of(state.getT3(),state.getT4());
-        return out;
-    }
-
-    public void alphaBeta2(AlphaBetaTree alphaBetaTree){
-        amountTraversedNodes ++;
-        if(alphaBetaTree.getCurrentDepth() == 0){
+    public void alphaBeta2(AlphaBetaTree alphaBetaTree) {
+        amountTraversedNodes++;
+        if (alphaBetaTree.getCurrentDepth() == 0) {
             alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
             return;
         }
@@ -133,7 +156,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
-        sortMoves(followupStates, alphaBetaTree.getLastMovedPiece(),alphaBetaTree.getCurrentState(),opponentAttack);
+        sortMoves(followupStates, alphaBetaTree.getLastMovedPiece(), alphaBetaTree.getCurrentState(), opponentAttack);
 
         if (alphaBetaTree.getCurrentState().isWhitePlayerMove()) {
             int bestValue = Integer.MIN_VALUE;
@@ -142,10 +165,10 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
                 alphaBetaTree.getChildTrees().add(childTree);
                 childTree.setBeta(alphaBetaTree.getBeta());
                 childTree.setAlpha(alphaBetaTree.getAlpha());
-                childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth()-1);
+                childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth() - 1);
                 childTree.setCurrentState(followupState.getT6());
                 childTree.setLastMovedPiece(extractLastMovedPiece(followupState));
-                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(),followupState.getT2(),followupState.getT3(),followupState.getT4()));
+                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(), followupState.getT2(), followupState.getT3(), followupState.getT4()));
                 alphaBeta2(childTree);
                 int value = childTree.getTreeValue();
                 bestValue = Math.max(bestValue, value);
@@ -163,10 +186,10 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
                 alphaBetaTree.getChildTrees().add(childTree);
                 childTree.setBeta(alphaBetaTree.getBeta());
                 childTree.setAlpha(alphaBetaTree.getAlpha());
-                childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth()-1);
+                childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth() - 1);
                 childTree.setCurrentState(followupState.getT6());
                 childTree.setLastMovedPiece(extractLastMovedPiece(followupState));
-                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(),followupState.getT2(),followupState.getT3(),followupState.getT4()));
+                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(), followupState.getT2(), followupState.getT3(), followupState.getT4()));
                 alphaBeta2(childTree);
                 int value = childTree.getTreeValue();
                 bestValue = Math.min(bestValue, value);
@@ -178,7 +201,6 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
                 }
             }
         }
-
 
 
     }
