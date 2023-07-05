@@ -2,6 +2,7 @@ package com.nghood.simplechess.evaluation;
 
 import com.nghood.simplechess.model.BoardState;
 import com.nghood.simplechess.model.Piece;
+import com.nghood.simplechess.utils.TimeMeasurement;
 
 public class Evaluation {
     // https://www.chessprogramming.org/Simplified_Evaluation_Function
@@ -85,6 +86,7 @@ public class Evaluation {
 
 
     public static int getBoardValue(BoardState boardState){
+        TimeMeasurement.start();
         int boardValue = 0;
         Piece[][] board = boardState.getChessBoard();
         for(int row = 0; row < 8; row++){
@@ -94,6 +96,7 @@ public class Evaluation {
 
             }
         }
+        TimeMeasurement.stop(TimeMeasurement.Category.GET_BOARD_VALUE);
         return boardValue;
     }
 

@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 // simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 3;
+    private static final int MAX_DEPTH = 4;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
