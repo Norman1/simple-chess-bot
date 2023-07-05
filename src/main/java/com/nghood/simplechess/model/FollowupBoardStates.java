@@ -26,11 +26,13 @@ public class FollowupBoardStates {
         if (invertCurrentPlayer) {
             isWhitePlayerMove = !isWhitePlayerMove;
         }
-        if (isKingLost(isWhitePlayerMove)) {
+        TimeMeasurement.start();
+        boolean isKingLost = isKingLost(isWhitePlayerMove);
+        TimeMeasurement.stop(TimeMeasurement.Category.KING_LOSS_CHECK);
+        if (isKingLost) {
             TimeMeasurement.stop(TimeMeasurement.Category.FOLLOWUP_BOARD_STATES);
             return;
         }
-
 
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {

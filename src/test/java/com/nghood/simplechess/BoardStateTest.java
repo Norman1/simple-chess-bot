@@ -3,6 +3,7 @@ package com.nghood.simplechess;
 import com.nghood.simplechess.io.BoardPrinter;
 import com.nghood.simplechess.model.BoardState;
 import com.nghood.simplechess.model.Piece;
+import com.nghood.simplechess.utils.TimeMeasurement;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 

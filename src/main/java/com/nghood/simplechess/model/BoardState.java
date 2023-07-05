@@ -1,10 +1,12 @@
 package com.nghood.simplechess.model;
 
 
+import com.nghood.simplechess.utils.TimeMeasurement;
 import lombok.Data;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.sql.Time;
 import java.util.Arrays;
 
 import static com.nghood.simplechess.model.Piece.*;
@@ -18,7 +20,6 @@ public class BoardState {
     private boolean isWhitePlayerMove;
     private boolean isWhiteKingMoved;
     private boolean isBlackKingMoved;
-    // TODO also set to true if opponent captures
     private boolean isLeftWhiteRookMoved;
     private boolean isRightWhiteRookMoved;
     private boolean isLeftBlackRookMoved;
@@ -54,6 +55,7 @@ public class BoardState {
     }
 
     public BoardState getCopy() {
+        TimeMeasurement.start();
         BoardState copy = new BoardState();
         copy.turn = turn;
         copy.isWhitePlayerMove = isWhitePlayerMove;
@@ -66,7 +68,17 @@ public class BoardState {
         if (enPassantVulnerablePawn != null) {
             copy.enPassantVulnerablePawn = Tuples.of(enPassantVulnerablePawn.getT1(), enPassantVulnerablePawn.getT2());
         }
-        copy.chessBoard =  Arrays.stream(chessBoard).map(Piece[]::clone).toArray(Piece[][]::new);
+        TimeMeasurement.start();
+
+        // Cloning like that because Arrays.stream(chessBoard).map(Piece[]::clone).toArray(Piece[][]::new); has worse performance
+        Piece[][] copyBoard = new Piece[8][];
+        for(int i = 0; i < 8; i++){
+            copyBoard[i] = chessBoard[i].clone();
+        }
+        copy.chessBoard = copyBoard;
+
+        TimeMeasurement.stop(TimeMeasurement.Category.CLONE_PIECE_ARRAY);
+        TimeMeasurement.stop(TimeMeasurement.Category.COPY_BOARD);
         return copy;
     }
 
