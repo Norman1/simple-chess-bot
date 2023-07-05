@@ -5,7 +5,6 @@ import lombok.Data;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple4;
 
-import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +18,16 @@ public class AlphaBetaTree {
     private BoardState currentState;
     private int alpha;
     private int beta;
+
+    /*
+    * Fields for quiescence search. If after depth is 0 and it is white's move, we are only calculating a subset of white's moves.
+    * We are hereby not allowing white to decrease it's score. Else white might go for something like taking a pawn with his queen and black takes the queen
+    * the turn after and then there are no more non quiet moves. Set the minimum values at depth 0.
+     */
+    private Integer guaranteedBlackMaxValue;
+    private Integer guaranteedWhiteMinValue;
+
+
 
   private  Tuple2<Integer,Integer> lastMovedPiece;
 

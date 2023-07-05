@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 // simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 5;
+    private static final int MAX_DEPTH = 3;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
@@ -162,27 +162,6 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return kingCount != 2;
     }
 
-//    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups, AttackBoardState opponentAttacks) {
-//        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = new ArrayList<>();
-//        f: for (var followup : followups) {
-//            Piece[][] board = followup.getT6().getChessBoard();
-//            for (int row = 0; row < 8; row++) {
-//                for (int column = 0; column < 8; column++) {
-//                    if (opponentAttacks.isFieldUnderAttack(row, column) && board[row][column] != null) {
-//                        boolean isWhitePlayerMove = followup.getT6().isWhitePlayerMove();
-//                        boolean isWhitePiece = board[row][column].ordinal() <= 5;
-//                        if ((isWhitePlayerMove && !isWhitePiece) || (!isWhitePlayerMove && isWhitePiece)) {
-//                            nonQuietFollowups.add(followup);
-//                            continue f;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//
-//        return nonQuietFollowups;
-//    }
-
     private int countPieces(BoardState boardState) {
         int pieceCount = 0;
         for (int row = 0; row < 8; row++) {
@@ -202,16 +181,18 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return followups.stream().filter(followup -> countPieces(followup.getT6()) != pieceCount).collect(Collectors.toList());
     }
 
-//    private int searchQuietPositions(AlphaBetaTree alphaBetaTree) {
-//        amountTraversedNodes++;
-//        FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
-//        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
-//        FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
-//        var followupStates = followupBoardStates.getFollowupStates();
-//        var nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
-//        System.out.println(followupStates.size() + " --> " + nonQuietFollowups.size());
-//        return 0;
-//    }
+    private int evaluatePosition(AlphaBetaTree alphaBetaTree) {
+        int currentStateValue = Evaluation.getBoardValue(alphaBetaTree.getCurrentState());
+        Integer guaranteedWhiteMinValue = alphaBetaTree.getGuaranteedWhiteMinValue();
+        Integer guaranteedBlackMaxValue = alphaBetaTree.getGuaranteedBlackMaxValue();
+        if (guaranteedWhiteMinValue != null && currentStateValue < guaranteedWhiteMinValue) {
+            return guaranteedWhiteMinValue;
+        } else if(guaranteedBlackMaxValue != null && currentStateValue > guaranteedBlackMaxValue){
+            return guaranteedBlackMaxValue;
+        }
+        return currentStateValue;
+    }
+
 
     private void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
@@ -219,26 +200,43 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
+
+        if (alphaBetaTree.getCurrentDepth() == 0) {
+            int depth0Value = Evaluation.getBoardValue(alphaBetaTree.getCurrentState());
+            // wasWhiteTurn --> followup is black turn
+            boolean wasWhiteTurn = alphaBetaTree.getCurrentState().isWhitePlayerMove();
+            if (wasWhiteTurn) {
+                alphaBetaTree.setGuaranteedWhiteMinValue(depth0Value);
+               // alphaBetaTree.setGuaranteedBlackMaxValue(depth0Value);
+            } else {
+                alphaBetaTree.setGuaranteedBlackMaxValue(depth0Value);
+               // alphaBetaTree.setGuaranteedWhiteMinValue(depth0Value);
+            }
+        }
+
+
         if (isKingTaken(alphaBetaTree.getCurrentState().getChessBoard())) {
-            alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
+            alphaBetaTree.setTreeValue(evaluatePosition(alphaBetaTree));
             return;
         }
+
         if (alphaBetaTree.getCurrentDepth() <= 0) {
 
-            var nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
-            if(nonQuietFollowups.isEmpty()){
-                alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
+
+
+            List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = new ArrayList<>();
+          //  if(alphaBetaTree.getCurrentDepth() > -5)
+         //   {
+                nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
+          //  }
+
+            if (nonQuietFollowups.isEmpty()) {
+                alphaBetaTree.setTreeValue(evaluatePosition(alphaBetaTree));
                 return;
-            }else{
+            } else {
                 followupStates = nonQuietFollowups;
             }
-            // searchQuietPositions(alphaBetaTree);
 
-           // alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
-
-
-            // alphaBetaTree.setTreeValue(searchQuietPositions(alphaBetaTree));
-           // return;
         }
 
 
@@ -249,6 +247,8 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
             for (var followupState : followupStates) {
                 AlphaBetaTree childTree = new AlphaBetaTree();
                 alphaBetaTree.getChildTrees().add(childTree);
+                childTree.setGuaranteedBlackMaxValue(alphaBetaTree.getGuaranteedBlackMaxValue());
+                childTree.setGuaranteedWhiteMinValue(alphaBetaTree.getGuaranteedWhiteMinValue());
                 childTree.setBeta(alphaBetaTree.getBeta());
                 childTree.setAlpha(alphaBetaTree.getAlpha());
                 childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth() - 1);
@@ -270,6 +270,8 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
             for (var followupState : followupStates) {
                 AlphaBetaTree childTree = new AlphaBetaTree();
                 alphaBetaTree.getChildTrees().add(childTree);
+                childTree.setGuaranteedBlackMaxValue(alphaBetaTree.getGuaranteedBlackMaxValue());
+                childTree.setGuaranteedWhiteMinValue(alphaBetaTree.getGuaranteedWhiteMinValue());
                 childTree.setBeta(alphaBetaTree.getBeta());
                 childTree.setAlpha(alphaBetaTree.getAlpha());
                 childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth() - 1);
