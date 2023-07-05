@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-// simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
     private static final int MAX_DEPTH = 4;
@@ -22,9 +21,9 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
     @Override
     public Tuple2<String, BoardState> calculateBestMove(BoardState initialState) {
         long startTime = System.currentTimeMillis();
-        FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState, null, true);
-        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState, opponentFollowup.getFollowupStates());
-        FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState, opponentAttack, false);
+       // FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState, null, true);
+        //AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState, opponentFollowup.getFollowupStates());
+        //FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState, opponentAttack, false);
         //  var followupStates = followupBoardStates.getFollowupStates();
         // int idx = minimax0(followupStates, initialState);
 
@@ -196,10 +195,13 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
     private void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
-        FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
-        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
-        FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
-        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
+        var opponentFollowup = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(),null,true);
+        //FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
+        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup);
+
+      //  FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
+        var followupBoardStates = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(),opponentAttack,false);
+        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates;
 
         if (alphaBetaTree.getCurrentDepth() == 0) {
             int depth0Value = Evaluation.getBoardValue(alphaBetaTree.getCurrentState());

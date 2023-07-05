@@ -1,5 +1,6 @@
 package com.nghood.simplechess.model;
 
+import com.nghood.simplechess.utils.TimeMeasurement;
 import reactor.util.function.Tuple6;
 
 import java.util.ArrayList;
@@ -17,6 +18,7 @@ public class AttackBoardStateCalculator {
          * - Moving the pawn 1 or 2 forward is no attack.
          * - Capturing a pawn with en passant does not set any field under attack
          */
+        TimeMeasurement.start();
         AttackBoardState attackBoardState = new AttackBoardState();
         for(var followupState : followupStates){
             //Special case: Moving a pawn 1 or 2 forward is no attack.
@@ -34,7 +36,7 @@ public class AttackBoardStateCalculator {
             // TODO castling king does not attack
         }
 
-
+        TimeMeasurement.stop(TimeMeasurement.Category.ATTACK_BOARD_STATE);
         return attackBoardState;
     }
 }

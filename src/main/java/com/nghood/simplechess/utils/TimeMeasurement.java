@@ -19,6 +19,7 @@ public class TimeMeasurement {
         timesMeasurements.put(Category.KING_LOSS_CHECK, new TimeMeasurementEntry());
         timesMeasurements.put(Category.COPY_BOARD, new TimeMeasurementEntry());
         timesMeasurements.put(Category.CLONE_PIECE_ARRAY, new TimeMeasurementEntry());
+        timesMeasurements.put(Category.ATTACK_BOARD_STATE, new TimeMeasurementEntry());
     }
 
 
@@ -48,7 +49,7 @@ public class TimeMeasurement {
     }
 
     public enum Category {
-        ALL, GET_BOARD_VALUE, FOLLOWUP_BOARD_STATES, KING_LOSS_CHECK,COPY_BOARD,CLONE_PIECE_ARRAY
+        ALL, GET_BOARD_VALUE, FOLLOWUP_BOARD_STATES, KING_LOSS_CHECK,COPY_BOARD,CLONE_PIECE_ARRAY,ATTACK_BOARD_STATE
     }
 
     @Data
