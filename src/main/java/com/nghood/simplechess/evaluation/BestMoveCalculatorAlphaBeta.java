@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 // simple minimax here
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 1;
+    private static final int MAX_DEPTH = 5;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
@@ -195,39 +195,52 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return pieceCount;
     }
 
+    // TODO mistake: since we are limiting the tree, we assume the players need to continue with a capture what is nonsense
+
     public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups, BoardState currentState) {
         int pieceCount = countPieces(currentState);
         return followups.stream().filter(followup -> countPieces(followup.getT6()) != pieceCount).collect(Collectors.toList());
     }
 
-    private int searchQuietPositions(AlphaBetaTree alphaBetaTree) {
+//    private int searchQuietPositions(AlphaBetaTree alphaBetaTree) {
+//        amountTraversedNodes++;
+//        FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
+//        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
+//        FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
+//        var followupStates = followupBoardStates.getFollowupStates();
+//        var nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
+//        System.out.println(followupStates.size() + " --> " + nonQuietFollowups.size());
+//        return 0;
+//    }
+
+    private void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
         FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
         FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
-        var followupStates = followupBoardStates.getFollowupStates();
-        var nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
-        System.out.println(followupStates.size() + " --> " + nonQuietFollowups.size());
-        return 0;
-    }
-
-    private void alphaBeta(AlphaBetaTree alphaBetaTree) {
-        amountTraversedNodes++;
-        FollowupBoardStates opponentFollowup;
-        AttackBoardState opponentAttack;
-        FollowupBoardStates followupBoardStates;
-        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates;
-        if (alphaBetaTree.getCurrentDepth() <= 0 || isKingTaken(alphaBetaTree.getCurrentState().getChessBoard())) {
-           // searchQuietPositions(alphaBetaTree);
+        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates.getFollowupStates();
+        if (isKingTaken(alphaBetaTree.getCurrentState().getChessBoard())) {
             alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
-            // alphaBetaTree.setTreeValue(searchQuietPositions(alphaBetaTree));
             return;
         }
+        if (alphaBetaTree.getCurrentDepth() <= 0) {
 
-        opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
-        opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup.getFollowupStates());
-        followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
-        followupStates = followupBoardStates.getFollowupStates();
+            var nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
+            if(nonQuietFollowups.isEmpty()){
+                alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
+                return;
+            }else{
+                followupStates = nonQuietFollowups;
+            }
+            // searchQuietPositions(alphaBetaTree);
+
+           // alphaBetaTree.setTreeValue(Evaluation.getBoardValue(alphaBetaTree.getCurrentState()));
+
+
+            // alphaBetaTree.setTreeValue(searchQuietPositions(alphaBetaTree));
+           // return;
+        }
+
 
         sortMoves(followupStates, alphaBetaTree.getLastMovedPiece(), alphaBetaTree.getCurrentState(), opponentAttack);
 
