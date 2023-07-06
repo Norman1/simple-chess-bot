@@ -201,15 +201,15 @@ public class FollowupBoardStates {
 
 
     private static List<Followup> handleKing(int row, int column, Piece piece, AttackBoardState attackBoardState, BoardState initialState) {
-        Tuple2<Integer, Integer> upLeft = Tuples.of(row + 1, column - 1);
-        Tuple2<Integer, Integer> up = Tuples.of(row + 1, column);
-        Tuple2<Integer, Integer> upRight = Tuples.of(row + 1, column + 1);
-        Tuple2<Integer, Integer> left = Tuples.of(row, column - 1);
-        Tuple2<Integer, Integer> right = Tuples.of(row, column + 1);
-        Tuple2<Integer, Integer> downLeft = Tuples.of(row - 1, column - 1);
-        Tuple2<Integer, Integer> down = Tuples.of(row - 1, column);
-        Tuple2<Integer, Integer> downRight = Tuples.of(row - 1, column + 1);
-        List<Tuple2<Integer, Integer>> moveLocations = List.of(upLeft, up, upRight, left, right, downLeft, down, downRight);
+        Location upLeft = new Location(row+1,column -1);
+        Location up = new Location(row + 1, column);
+        Location upRight = new Location(row + 1, column + 1);
+        Location left = new Location(row, column - 1);
+        Location right = new Location(row, column + 1);
+        Location downLeft = new Location(row - 1, column - 1);
+        Location down = new Location(row - 1, column);
+        Location downRight = new Location(row - 1, column + 1);
+        List<Location> moveLocations = List.of(upLeft, up, upRight, left, right, downLeft, down, downRight);
         moveLocations = removeErroneousLocations(moveLocations, piece,initialState);
 
         var followupStates = getFollowupStates(row, column, moveLocations, piece,initialState);
@@ -286,25 +286,25 @@ public class FollowupBoardStates {
 
 
     private static List<Followup> handleBlackPawn(int row, int column, BoardState initialState) {
-        List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
+        List<Location> moveLocations = new ArrayList<>();
 
         // move 1 down
         boolean down1IsTaken = isLocationOwnedBySomeone(row - 1, column,initialState);
         if (!down1IsTaken) {
-            moveLocations.add(Tuples.of(row - 1, column));
+            moveLocations.add(new Location(row - 1, column));
         }
 
         // move 2 down
-        boolean down2IsTaken = !isLocationInBounds(Tuples.of(row - 2, column)) || isLocationOwnedBySomeone(row - 2, column,initialState);
+        boolean down2IsTaken = !isLocationInBounds(new Location(row-2,column)) || isLocationOwnedBySomeone(row - 2, column,initialState);
         if (row == 6 && !down1IsTaken) {
             if (!down2IsTaken) {
-                moveLocations.add(Tuples.of(row - 2, column));
+                moveLocations.add(new Location(row - 2, column));
             }
         }
 
         // attack
-        Tuple2<Integer, Integer> attackLeft = Tuples.of(row - 1, column - 1);
-        Tuple2<Integer, Integer> attackRight = Tuples.of(row - 1, column + 1);
+        Location attackLeft = new Location(row - 1, column - 1);
+        Location attackRight = new Location(row - 1, column + 1);
         if (isLocationInBounds(attackLeft) && isLocationOwnedByOpponent(row - 1, column - 1, Piece.BLACK_PAWN,initialState)) {
             moveLocations.add(attackLeft);
         }
@@ -369,26 +369,26 @@ public class FollowupBoardStates {
     }
 
     private static List<Followup> handleWhitePawn(int row, int column, BoardState initialState) {
-        List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
+        List<Location> moveLocations = new ArrayList<>();
 
 
         // move 1 up
         boolean up1IsTaken = isLocationOwnedBySomeone(row + 1, column,initialState);
         if (!up1IsTaken) {
-            moveLocations.add(Tuples.of(row + 1, column));
+            moveLocations.add(new Location(row + 1, column));
         }
 
         // move 2 up
-        boolean up2IsTaken = !isLocationInBounds(Tuples.of(row + 2, column)) || isLocationOwnedBySomeone(row + 2, column,initialState);
+        boolean up2IsTaken = !isLocationInBounds(new Location(row + 2, column)) || isLocationOwnedBySomeone(row + 2, column,initialState);
         if (row == 1 && !up1IsTaken) {
             if (!up2IsTaken) {
-                moveLocations.add(Tuples.of(row + 2, column));
+                moveLocations.add(new Location(row + 2, column));
             }
         }
 
         // attack
-        Tuple2<Integer, Integer> attackLeft = Tuples.of(row + 1, column - 1);
-        Tuple2<Integer, Integer> attackRight = Tuples.of(row + 1, column + 1);
+        Location attackLeft = new Location(row + 1, column - 1);
+        Location attackRight = new Location(row + 1, column + 1);
         if (isLocationInBounds(attackLeft) && isLocationOwnedByOpponent(row + 1, column - 1, Piece.WHITE_PAWN,initialState)) {
             moveLocations.add(attackLeft);
         }
@@ -459,91 +459,91 @@ public class FollowupBoardStates {
     }
 
     private static List<Followup> handleBishop(int row, int column, Piece piece,BoardState initialState) {
-        List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
+        List<Location> moveLocations = new ArrayList<>();
         // left up
         for (int i = 1; i < 8; i++) {
-            Tuple2<Integer, Integer> location = Tuples.of(row + i, column - i);
+            Location location = new Location(row + i, column - i);
             if (!isLocationInBounds(location)) {
                 break;
             }
-            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece,initialState)) {
+            if (isLocationOwnedBySelf(location.row, location.column, piece,initialState)) {
                 break;
-            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece,initialState)) {
-                moveLocations.add(Tuples.of(row + i, column - i));
+            } else if (isLocationOwnedByOpponent(location.row, location.column, piece,initialState)) {
+                moveLocations.add(new Location(row + i, column - i));
                 break;
             }
-            moveLocations.add(Tuples.of(row + i, column - i));
+            moveLocations.add(new Location(row + i, column - i));
         }
 
         // right up
         for (int i = 1; i < 8; i++) {
-            Tuple2<Integer, Integer> location = Tuples.of(row + i, column + i);
+            Location location = new Location(row + i, column + i);
             if (!isLocationInBounds(location)) {
                 break;
             }
-            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece,initialState)) {
+            if (isLocationOwnedBySelf(location.row, location.column, piece,initialState)) {
                 break;
-            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece,initialState)) {
-                moveLocations.add(Tuples.of(row + i, column + i));
+            } else if (isLocationOwnedByOpponent(location.row, location.column, piece,initialState)) {
+                moveLocations.add(new Location(row + i, column + i));
                 break;
             }
-            moveLocations.add(Tuples.of(row + i, column + i));
+            moveLocations.add(new Location(row + i, column + i));
         }
 
         // left down
         for (int i = 1; i < 8; i++) {
-            Tuple2<Integer, Integer> location = Tuples.of(row - i, column - i);
+            Location location = new Location(row - i, column - i);
             if (!isLocationInBounds(location)) {
                 break;
             }
-            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece,initialState)) {
+            if (isLocationOwnedBySelf(location.row, location.column, piece,initialState)) {
                 break;
-            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece,initialState)) {
-                moveLocations.add(Tuples.of(row - i, column - i));
+            } else if (isLocationOwnedByOpponent(location.row, location.column, piece,initialState)) {
+                moveLocations.add(new Location(row - i, column - i));
                 break;
             }
-            moveLocations.add(Tuples.of(row - i, column - i));
+            moveLocations.add(new Location(row - i, column - i));
         }
 
         // right down
         for (int i = 1; i < 8; i++) {
-            Tuple2<Integer, Integer> location = Tuples.of(row - i, column + i);
+            Location location = new Location(row - i, column + i);
             if (!isLocationInBounds(location)) {
                 break;
             }
-            if (isLocationOwnedBySelf(location.getT1(), location.getT2(), piece,initialState)) {
+            if (isLocationOwnedBySelf(location.row, location.column, piece,initialState)) {
                 break;
-            } else if (isLocationOwnedByOpponent(location.getT1(), location.getT2(), piece,initialState)) {
-                moveLocations.add(Tuples.of(row - i, column + i));
+            } else if (isLocationOwnedByOpponent(location.row, location.column, piece,initialState)) {
+                moveLocations.add(new Location(row - i, column + i));
                 break;
             }
-            moveLocations.add(Tuples.of(row - i, column + i));
+            moveLocations.add(new Location(row - i, column + i));
         }
 
         return getFollowupStates(row, column, moveLocations, piece,initialState);
     }
 
     private static List<Followup> handleRook(int row, int column, Piece piece,BoardState initialState) {
-        List<Tuple2<Integer, Integer>> moveLocations = new ArrayList<>();
+        List<Location> moveLocations = new ArrayList<>();
         // row up
         for (int i = row + 1; i < 8; i++) {
             if (isLocationOwnedBySelf(i, column, piece,initialState)) {
                 break;
             } else if (isLocationOwnedByOpponent(i, column, piece,initialState)) {
-                moveLocations.add(Tuples.of(i, column));
+                moveLocations.add(new Location(i, column));
                 break;
             }
-            moveLocations.add(Tuples.of(i, column));
+            moveLocations.add(new Location(i, column));
         }
         // row down
         for (int i = row - 1; i >= 0; i--) {
             if (isLocationOwnedBySelf(i, column, piece,initialState)) {
                 break;
             } else if (isLocationOwnedByOpponent(i, column, piece,initialState)) {
-                moveLocations.add(Tuples.of(i, column));
+                moveLocations.add(new Location(i, column));
                 break;
             }
-            moveLocations.add(Tuples.of(i, column));
+            moveLocations.add(new Location(i, column));
         }
 
         // column right
@@ -551,10 +551,10 @@ public class FollowupBoardStates {
             if (isLocationOwnedBySelf(row, i, piece,initialState)) {
                 break;
             } else if (isLocationOwnedByOpponent(row, i, piece,initialState)) {
-                moveLocations.add(Tuples.of(row, i));
+                moveLocations.add(new Location(row, i));
                 break;
             }
-            moveLocations.add(Tuples.of(row, i));
+            moveLocations.add(new Location(row, i));
         }
 
         // column left
@@ -562,10 +562,10 @@ public class FollowupBoardStates {
             if (isLocationOwnedBySelf(row, i, piece,initialState)) {
                 break;
             } else if (isLocationOwnedByOpponent(row, i, piece,initialState)) {
-                moveLocations.add(Tuples.of(row, i));
+                moveLocations.add(new Location(row, i));
                 break;
             }
-            moveLocations.add(Tuples.of(row, i));
+            moveLocations.add(new Location(row, i));
         }
 
         var followupStates = getFollowupStates(row, column, moveLocations, piece,initialState);
@@ -594,29 +594,29 @@ public class FollowupBoardStates {
     }
 
     private static List<Followup> handleKnight(int row, int column, Piece piece,BoardState initialState) {
-        Tuple2<Integer, Integer> jumpLocation1 = Tuples.of(row + 2, column - 1);
-        Tuple2<Integer, Integer> jumpLocation2 = Tuples.of(row + 2, column + 1);
-        Tuple2<Integer, Integer> jumpLocation3 = Tuples.of(row - 2, column - 1);
-        Tuple2<Integer, Integer> jumpLocation4 = Tuples.of(row - 2, column + 1);
-        Tuple2<Integer, Integer> jumpLocation5 = Tuples.of(row + 1, column - 2);
-        Tuple2<Integer, Integer> jumpLocation6 = Tuples.of(row - 1, column - 2);
-        Tuple2<Integer, Integer> jumpLocation7 = Tuples.of(row - 1, column + 2);
-        Tuple2<Integer, Integer> jumpLocation8 = Tuples.of(row + 1, column + 2);
-        List<Tuple2<Integer, Integer>> jumpLocations = List.of(jumpLocation1, jumpLocation2, jumpLocation3,
+        Location jumpLocation1 = new Location(row + 2, column - 1);
+        Location jumpLocation2 =  new Location(row + 2, column + 1);
+        Location jumpLocation3 =  new Location(row - 2, column - 1);
+        Location jumpLocation4 =  new Location(row - 2, column + 1);
+        Location jumpLocation5 =  new Location(row + 1, column - 2);
+        Location jumpLocation6 =  new Location(row - 1, column - 2);
+        Location jumpLocation7 =  new Location(row - 1, column + 2);
+        Location jumpLocation8 =  new Location(row + 1, column + 2);
+        List<Location> jumpLocations = List.of(jumpLocation1, jumpLocation2, jumpLocation3,
                 jumpLocation4, jumpLocation5, jumpLocation6, jumpLocation7, jumpLocation8);
         jumpLocations = removeErroneousLocations(jumpLocations, piece,initialState);
         return getFollowupStates(row, column, jumpLocations, piece,initialState);
     }
 
     private static List<Followup> getFollowupStates(int initialRow,
-         int initialColumn, List<Tuple2<Integer, Integer>> moveLocations, Piece piece, BoardState initialState) {
+         int initialColumn, List<Location> moveLocations, Piece piece, BoardState initialState) {
         List<Followup> out = new ArrayList<>();
-        for (Tuple2<Integer, Integer> moveLocation : moveLocations) {
+        for (Location moveLocation : moveLocations) {
             BoardState copy = initialState.getCopy();
             copy.setPieceAt(initialRow,initialColumn,null);
-            copy.setPieceAt(moveLocation.getT1(),moveLocation.getT2(),piece);
+            copy.setPieceAt(moveLocation.row,moveLocation.column,piece);
 
-            Followup followup = new Followup(initialRow,initialColumn,moveLocation.getT1(),moveLocation.getT2(),piece,copy);
+            Followup followup = new Followup(initialRow,initialColumn,moveLocation.row,moveLocation.column,piece,copy);
             out.add(followup);
         }
         return out;
@@ -624,23 +624,23 @@ public class FollowupBoardStates {
     }
 
 
-    private static List<Tuple2<Integer, Integer>> removeErroneousLocations(List<Tuple2<Integer, Integer>> locations, Piece piece,BoardState initialState) {
-        List<Tuple2<Integer, Integer>> out = removeLocationsOutsideOfBounds(locations);
+    private static List<Location> removeErroneousLocations(List<Location> locations, Piece piece,BoardState initialState) {
+        List<Location> out = removeLocationsOutsideOfBounds(locations);
         out = removeLocationsOwnedBySelf(out, piece,initialState);
         return out;
     }
 
-    private static List<Tuple2<Integer, Integer>> removeLocationsOutsideOfBounds(List<Tuple2<Integer, Integer>> locations) {
+    private static List<Location> removeLocationsOutsideOfBounds(List<Location> locations) {
         return locations.stream().filter(FollowupBoardStates::isLocationInBounds).collect(Collectors.toList());
     }
 
-    private static boolean isLocationInBounds(Tuple2<Integer, Integer> location) {
-        return location.getT1() >= 0 && location.getT2() >= 0 && location.getT1() < 8 && location.getT2() < 8;
+    private static boolean isLocationInBounds(Location location) {
+        return location.row >= 0 && location.column >= 0 && location.row < 8 && location.column < 8;
     }
 
 
-    private static List<Tuple2<Integer, Integer>> removeLocationsOwnedBySelf(List<Tuple2<Integer, Integer>> locations, Piece piece,BoardState initialState) {
-        return locations.stream().filter(location -> !isLocationOwnedBySelf(location.getT1(), location.getT2(), piece,initialState)).collect(Collectors.toList());
+    private static List<Location> removeLocationsOwnedBySelf(List<Location> locations, Piece piece,BoardState initialState) {
+        return locations.stream().filter(location -> !isLocationOwnedBySelf(location.row, location.column, piece,initialState)).collect(Collectors.toList());
     }
 
     private static boolean isLocationOwnedBySelf(int row, int column, Piece testPiece,BoardState initialState) {
@@ -668,8 +668,10 @@ public class FollowupBoardStates {
         return initialState.getPieceAt(row,column) != null;
     }
 
-    public record Followup(int startRow, int startColumn, int resultRow, int resultColumn, Piece movingPiece, BoardState resultState){
-    }
+
+    public record Location(int row, int column){ }
+
+    public record Followup(int startRow, int startColumn, int resultRow, int resultColumn, Piece movingPiece, BoardState resultState){ }
 
 
 }
