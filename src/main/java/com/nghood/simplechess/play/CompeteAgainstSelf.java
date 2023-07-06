@@ -13,7 +13,7 @@ import java.sql.Time;
  */
 public class CompeteAgainstSelf {
 
-    private static final int MAX_TURNS = 7;
+    private static final int MAX_TURNS = 10;
 
     private static void compete(){
         TimeMeasurement.start();

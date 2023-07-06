@@ -85,7 +85,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
      * 3. For each non-capture add a subtraction if we are moving to a field which is under opponent attack from a piece which is worth less than our piece. Evaluating
      * the board value seems too expensive and does not seem to give benefits.
      */
-    private void sortMoves(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates, Tuple2<Integer, Integer> lastMovedPiece, BoardState initialState, AttackBoardState attackBoardState) {
+    private void sortMoves(List<FollowupBoardStates.Followup> followupStates, Tuple2<Integer, Integer> lastMovedPiece, BoardState initialState, AttackBoardState attackBoardState) {
         /* Case no sort: 16 seconds, All traversed nodes: 6678706
          * Add sort last capture (no least valuable piece yet): 13 seconds All traversed nodes: 4192084
          * Add capturing pieces: 11 seconds, All traversed nodes: 2358361
@@ -97,23 +97,23 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
     }
 
     // first row, first column, second row, second column
-    private int getSortValue(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> followupState, Tuple2<Integer, Integer> lastMovedPiece, BoardState initialState, AttackBoardState attackBoardState) {
+    private int getSortValue(FollowupBoardStates.Followup followupState, Tuple2<Integer, Integer> lastMovedPiece, BoardState initialState, AttackBoardState attackBoardState) {
         // we fail to consider stuff like en passant captures but whatever
         int value = 0;
         // Prio 1: last moved piece captures
         if (lastMovedPiece != null) {
-            boolean isLastMoveCapture = followupState.getT3() == lastMovedPiece.getT1() && followupState.getT4() == lastMovedPiece.getT2();
+            boolean isLastMoveCapture = followupState.resultRow() == lastMovedPiece.getT1() && followupState.resultColumn() == lastMovedPiece.getT2();
             if (isLastMoveCapture) {
                 value += 1000000;
-                Piece capturingPiece = followupState.getT6().getPieceAt(followupState.getT3(),followupState.getT4());
+                Piece capturingPiece = followupState.resultState().getPieceAt(followupState.resultRow(),followupState.resultColumn());
                 int capturingPieceValue = Evaluation.getAbsolutePieceValue(capturingPiece);
                 value -= capturingPieceValue;
             }
         }
 
         // Prio 2: captures
-        Piece previousPieceOnPosition = initialState.getPieceAt(followupState.getT3(),followupState.getT4());
-        Piece movingPiece = followupState.getT6().getPieceAt(followupState.getT3(),followupState.getT4());
+        Piece previousPieceOnPosition = initialState.getPieceAt(followupState.resultRow(),followupState.resultColumn());
+        Piece movingPiece = followupState.resultState().getPieceAt(followupState.resultRow(),followupState.resultColumn());
         int movingPieceValue = Evaluation.getAbsolutePieceValue(movingPiece);
         if (previousPieceOnPosition != null) {
             int capturedPieceValue = Evaluation.getAbsolutePieceValue(previousPieceOnPosition);
@@ -121,7 +121,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
             value -= movingPieceValue;
         }
         // Prio 3: non captures
-        int opponentAttackValue = attackBoardState.getAttackValue(followupState.getT3(), followupState.getT4());
+        int opponentAttackValue = attackBoardState.getAttackValue(followupState.resultRow(), followupState.resultColumn());
         if (opponentAttackValue != -1) {
             value -= movingPieceValue;
         }
@@ -130,8 +130,8 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
     }
 
 
-    private Tuple2<Integer, Integer> extractLastMovedPiece(Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState> state) {
-        Tuple2<Integer, Integer> out = Tuples.of(state.getT3(), state.getT4());
+    private Tuple2<Integer, Integer> extractLastMovedPiece(FollowupBoardStates.Followup state) {
+        Tuple2<Integer, Integer> out = Tuples.of(state.resultRow(), state.resultColumn());
         return out;
     }
 
@@ -163,10 +163,10 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
     }
 
 
-    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups,AlphaBetaTree alphaBetaTree) {
+    public List<FollowupBoardStates.Followup> getNonQuietFollowups(List<FollowupBoardStates.Followup> followups, AlphaBetaTree alphaBetaTree) {
         int pieceCount = countPieces(alphaBetaTree.getCurrentState());
 
-        var nonQuietFollowups = followups.stream().filter(followup -> countPieces(followup.getT6()) != pieceCount).collect(Collectors.toList());
+        var nonQuietFollowups = followups.stream().filter(followup -> countPieces(followup.resultState()) != pieceCount).collect(Collectors.toList());
         // remove followups where black or white gets a worse result than the guaranteed value
  //       nonQuietFollowups =nonQuietFollowups.stream().filter( followup -> {
 //            int value = Evaluation.getBoardValue(followup.getT6());
@@ -206,7 +206,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         AttackBoardState opponentAttack = AttackBoardStateCalculator2.getAttackBoardState(alphaBetaTree.getCurrentState(),!alphaBetaTree.getCurrentState().isWhitePlayerMove());
 
         var followupBoardStates = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), opponentAttack);
-        List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates;
+        List<FollowupBoardStates.Followup> followupStates = followupBoardStates;
 
         if (alphaBetaTree.getCurrentDepth() == 0) {
             int depth0Value = Evaluation.getBoardValue(alphaBetaTree.getCurrentState());
@@ -227,7 +227,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
         if (alphaBetaTree.getCurrentDepth() <= 0) {
 
-            List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree);
+            List<FollowupBoardStates.Followup> nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree);
 
             if (nonQuietFollowups.isEmpty()) {
                 alphaBetaTree.setTreeValue(evaluatePosition(alphaBetaTree));
@@ -251,9 +251,9 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
                 childTree.setBeta(alphaBetaTree.getBeta());
                 childTree.setAlpha(alphaBetaTree.getAlpha());
                 childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth() - 1);
-                childTree.setCurrentState(followupState.getT6());
+                childTree.setCurrentState(followupState.resultState());
                 childTree.setLastMovedPiece(extractLastMovedPiece(followupState));
-                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(), followupState.getT2(), followupState.getT3(), followupState.getT4()));
+                childTree.setMovesToGetToPosition(Tuples.of(followupState.startRow(), followupState.startColumn(), followupState.resultRow(), followupState.resultColumn()));
                 alphaBeta(childTree);
                 int value = childTree.getTreeValue();
                 bestValue = Math.max(bestValue, value);
@@ -274,9 +274,9 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
                 childTree.setBeta(alphaBetaTree.getBeta());
                 childTree.setAlpha(alphaBetaTree.getAlpha());
                 childTree.setCurrentDepth(alphaBetaTree.getCurrentDepth() - 1);
-                childTree.setCurrentState(followupState.getT6());
+                childTree.setCurrentState(followupState.resultState());
                 childTree.setLastMovedPiece(extractLastMovedPiece(followupState));
-                childTree.setMovesToGetToPosition(Tuples.of(followupState.getT1(), followupState.getT2(), followupState.getT3(), followupState.getT4()));
+                childTree.setMovesToGetToPosition(Tuples.of(followupState.startRow(), followupState.startColumn(), followupState.resultRow(), followupState.resultColumn()));
                 alphaBeta(childTree);
                 int value = childTree.getTreeValue();
                 bestValue = Math.min(bestValue, value);
