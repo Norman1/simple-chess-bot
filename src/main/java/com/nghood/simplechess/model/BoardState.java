@@ -6,9 +6,6 @@ import lombok.Data;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
-import java.sql.Time;
-import java.util.Arrays;
-
 import static com.nghood.simplechess.model.Piece.*;
 
 /**
@@ -31,34 +28,36 @@ public class BoardState {
      * a11 is 0-0
      * first rows then columns
      */
-    private Piece[][] chessBoardX;
+    private Piece[] chessBoard;
 
-    public Piece getPieceAt(int row, int column){
-        return chessBoardX[row][column];
+    public Piece getPieceAt(int row, int column) {
+        return chessBoard[(row * 8) + column];
     }
 
-    public void setPieceAt(int row, int column, Piece piece){
-        chessBoardX[row][column] = piece;
+    public void setPieceAt(int row, int column, Piece piece) {
+        chessBoard[(row * 8) + column] = piece;
     }
 
 
     public void setupInitialBoard() {
-        Piece[][] initialBoard = {{WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK},
-                {WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {null, null, null, null, null, null, null, null},
-                {BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN},
-                {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}};
+
+        Piece[] initialBoard = {WHITE_ROOK, WHITE_KNIGHT, WHITE_BISHOP, WHITE_QUEEN, WHITE_KING, WHITE_BISHOP, WHITE_KNIGHT, WHITE_ROOK,
+                WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN, WHITE_PAWN,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                null, null, null, null, null, null, null, null,
+                BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN, BLACK_PAWN,
+                BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK};
+
 
         isWhitePlayerMove = true;
-        chessBoardX = initialBoard;
+        chessBoard = initialBoard;
     }
 
-    public void nextMove(){
+    public void nextMove() {
         turn++;
-        isWhitePlayerMove =!isWhitePlayerMove;
+        isWhitePlayerMove = !isWhitePlayerMove;
     }
 
     public BoardState getCopy() {
@@ -76,13 +75,7 @@ public class BoardState {
             copy.enPassantVulnerablePawn = Tuples.of(enPassantVulnerablePawn.getT1(), enPassantVulnerablePawn.getT2());
         }
         TimeMeasurement.start();
-
-        // Cloning like that because Arrays.stream(chessBoard).map(Piece[]::clone).toArray(Piece[][]::new); has worse performance
-        Piece[][] copyBoard = new Piece[8][];
-        for(int i = 0; i < 8; i++){
-            copyBoard[i] = chessBoardX[i].clone();
-        }
-        copy.chessBoardX = copyBoard;
+        copy.chessBoard = chessBoard.clone();
 
         TimeMeasurement.stop(TimeMeasurement.Category.CLONE_PIECE_ARRAY);
         TimeMeasurement.stop(TimeMeasurement.Category.COPY_BOARD);
