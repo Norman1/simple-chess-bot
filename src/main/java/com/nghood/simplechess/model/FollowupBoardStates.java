@@ -19,9 +19,6 @@ public class FollowupBoardStates {
 
     }
 
-    // private BoardState initialState;
-    // first row, first column, second row, second column
-    // private List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = new ArrayList<>();
 
     public static List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getFollowups
             (BoardState initialState, AttackBoardState attackBoardState, boolean invertCurrentPlayer) {
@@ -128,7 +125,6 @@ public class FollowupBoardStates {
                     followup.getT6().setEnPassantVulnerablePawn(null);
                 }
             }
-
         });
 
         // if there is a move where we can capture the opponent king, remove all other moves
@@ -146,14 +142,14 @@ public class FollowupBoardStates {
         int kingCount = 0;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                if (board.getPieceAt(row,column) != null) {
-                    if (board.getPieceAt(row,column)== Piece.WHITE_KING || board.getPieceAt(row,column) == Piece.BLACK_KING) {
+                Piece piece = board.getPieceAt(row,column);
+                if (piece != null) {
+                    if (piece== Piece.WHITE_KING || piece == Piece.BLACK_KING) {
                         kingCount++;
                     }
                 }
             }
         }
-
         return kingCount != 2;
     }
 
@@ -163,10 +159,11 @@ public class FollowupBoardStates {
         boolean kingPresent = false;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                if (initialState.getPieceAt(row,column) != null) {
-                    if (checkWhiteKing && initialState.getPieceAt(row,column) == Piece.WHITE_KING) {
+                Piece piece = initialState.getPieceAt(row,column);
+                if (piece != null) {
+                    if (checkWhiteKing && piece == Piece.WHITE_KING) {
                         kingPresent = true;
-                    } else if (!checkWhiteKing &&initialState.getPieceAt(row,column) == Piece.BLACK_KING) {
+                    } else if (!checkWhiteKing & piece == Piece.BLACK_KING) {
                         kingPresent = true;
                     }
                 }
@@ -175,11 +172,6 @@ public class FollowupBoardStates {
 
         return !kingPresent;
     }
-
-   // public FollowupBoardStates(BoardState initialState) {
-   //     this(initialState, null, false);
-  //  }
-
 
     public static void setKingAndRookMovements(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates) {
         //0,0; 0,4; 0,7; 7,0; 7,4; 7,7
@@ -636,7 +628,7 @@ public class FollowupBoardStates {
     }
 
     private static List<Tuple2<Integer, Integer>> removeLocationsOutsideOfBounds(List<Tuple2<Integer, Integer>> locations) {
-        return locations.stream().filter(location -> isLocationInBounds(location)).collect(Collectors.toList());
+        return locations.stream().filter(FollowupBoardStates::isLocationInBounds).collect(Collectors.toList());
     }
 
     private static boolean isLocationInBounds(Tuple2<Integer, Integer> location) {
