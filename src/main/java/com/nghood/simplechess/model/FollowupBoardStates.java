@@ -43,74 +43,68 @@ public class FollowupBoardStates {
                     continue;
                 }
                 switch (piece) {
-                    case WHITE_KNIGHT:
+                    case WHITE_KNIGHT -> {
                         if (isWhitePlayerMove) {
-                            followupStates.addAll(handleKnight(row, column, Piece.WHITE_KNIGHT,initialState));
+                            followupStates.addAll(handleKnight(row, column, Piece.WHITE_KNIGHT, initialState));
                         }
-                        break;
-                    case BLACK_KNIGHT:
+                    }
+                    case BLACK_KNIGHT -> {
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleKnight(row, column, Piece.BLACK_KNIGHT,initialState));
+                            followupStates.addAll(handleKnight(row, column, Piece.BLACK_KNIGHT, initialState));
                         }
-                        break;
-                    case WHITE_ROOK:
+                    }
+                    case WHITE_ROOK -> {
                         if (isWhitePlayerMove) {
-                            followupStates.addAll(handleRook(row, column, Piece.WHITE_ROOK,initialState));
+                            followupStates.addAll(handleRook(row, column, Piece.WHITE_ROOK, initialState));
                         }
-                        break;
-                    case BLACK_ROOK:
+                    }
+                    case BLACK_ROOK -> {
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleRook(row, column, Piece.BLACK_ROOK,initialState));
+                            followupStates.addAll(handleRook(row, column, Piece.BLACK_ROOK, initialState));
                         }
-                        break;
-                    case WHITE_PAWN:
+                    }
+                    case WHITE_PAWN -> {
                         if (isWhitePlayerMove) {
-                            // TODO debug
-                            if(row == 7){
-                                System.out.println("gotcha");
-                                BoardPrinter boardPrinter = new BoardPrinter();
-                                boardPrinter.printBoard(initialState);
-                            }
-                            followupStates.addAll(handleWhitePawn(row, column,initialState));
+                            followupStates.addAll(handleWhitePawn(row, column, initialState));
                         }
-                        break;
-                    case BLACK_PAWN:
+                    }
+                    case BLACK_PAWN -> {
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleBlackPawn(row, column,initialState));
+                            followupStates.addAll(handleBlackPawn(row, column, initialState));
                         }
-                        break;
-                    case WHITE_BISHOP:
+                    }
+                    case WHITE_BISHOP -> {
                         if (isWhitePlayerMove) {
-                            followupStates.addAll(handleBishop(row, column, piece,initialState));
+                            followupStates.addAll(handleBishop(row, column, piece, initialState));
                         }
-                        break;
-                    case BLACK_BISHOP:
+                    }
+                    case BLACK_BISHOP -> {
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleBishop(row, column, piece,initialState));
+                            followupStates.addAll(handleBishop(row, column, piece, initialState));
                         }
-                        break;
-                    case WHITE_QUEEN:
+                    }
+                    case WHITE_QUEEN -> {
                         if (isWhitePlayerMove) {
-                            followupStates.addAll(handleQueen(row, column, piece,initialState));
+                            followupStates.addAll(handleQueen(row, column, piece, initialState));
                         }
-                        break;
-                    case BLACK_QUEEN:
+                    }
+                    case BLACK_QUEEN -> {
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleQueen(row, column, piece,initialState));
+                            followupStates.addAll(handleQueen(row, column, piece, initialState));
                         }
-                        break;
-                    case WHITE_KING:
+                    }
+                    case WHITE_KING -> {
                         if (isWhitePlayerMove) {
-                            followupStates.addAll(handleKing(row, column, piece, attackBoardState,initialState));
+                            followupStates.addAll(handleKing(row, column, piece, attackBoardState, initialState));
                         }
-                        break;
-                    case BLACK_KING:
+                    }
+                    case BLACK_KING -> {
                         if (!isWhitePlayerMove) {
-                            followupStates.addAll(handleKing(row, column, piece, attackBoardState,initialState));
+                            followupStates.addAll(handleKing(row, column, piece, attackBoardState, initialState));
                         }
-                        break;
-                    default:
-                        break;
+                    }
+                    default -> {
+                    }
                 }
             }
         }

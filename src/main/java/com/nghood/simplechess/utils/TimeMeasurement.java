@@ -12,6 +12,7 @@ public class TimeMeasurement {
 
     private static Map<Category, TimeMeasurementEntry> timesMeasurements = new HashMap<>();
 
+    private static boolean ENABLE_MEASUREMENTS = true;
     static {
         timesMeasurements.put(Category.ALL, new TimeMeasurementEntry());
         timesMeasurements.put(Category.GET_BOARD_VALUE, new TimeMeasurementEntry());
@@ -26,12 +27,18 @@ public class TimeMeasurement {
     private static Stack<Long> openMeasurements = new Stack<>();
 
     public static void start() {
+        if(!ENABLE_MEASUREMENTS){
+            return;
+        }
         long startTime = System.currentTimeMillis();
         openMeasurements.push(startTime);
 
     }
 
     public static void stop(Category category) {
+        if(!ENABLE_MEASUREMENTS){
+            return;
+        }
         long endTime = System.currentTimeMillis();
         long startTime = openMeasurements.pop();
         long executionTime = endTime - startTime;

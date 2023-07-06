@@ -6,6 +6,8 @@ import lombok.Data;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
+import java.sql.Time;
+
 import static com.nghood.simplechess.model.Piece.*;
 
 /**
@@ -31,7 +33,8 @@ public class BoardState {
     private Piece[] chessBoard;
 
     public Piece getPieceAt(int row, int column) {
-        return chessBoard[(row * 8) + column];
+        Piece piece = chessBoard[(row * 8) + column];
+        return piece;
     }
 
     public void setPieceAt(int row, int column, Piece piece) {
