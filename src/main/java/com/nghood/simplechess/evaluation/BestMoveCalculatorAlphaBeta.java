@@ -127,7 +127,6 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         }
 
         return value;
-
     }
 
 
@@ -201,10 +200,12 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
     private void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
-        var opponentFollowup = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), null, true);
-        AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup);
+ //       var opponentFollowup = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), null, true);
+  //      AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup);
 
-        var followupBoardStates = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), opponentAttack, false);
+        AttackBoardState opponentAttack = AttackBoardStateCalculator2.getAttackBoardState(alphaBetaTree.getCurrentState(),!alphaBetaTree.getCurrentState().isWhitePlayerMove());
+
+        var followupBoardStates = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), opponentAttack);
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates;
 
         if (alphaBetaTree.getCurrentDepth() == 0) {

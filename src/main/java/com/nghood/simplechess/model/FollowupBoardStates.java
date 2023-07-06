@@ -21,13 +21,11 @@ public class FollowupBoardStates {
 
 
     public static List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getFollowups
-            (BoardState initialState, AttackBoardState attackBoardState, boolean invertCurrentPlayer) {
+            (BoardState initialState, AttackBoardState attackBoardState) {
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = new ArrayList<>();
         TimeMeasurement.start();
         boolean isWhitePlayerMove = initialState.isWhitePlayerMove();
-        if (invertCurrentPlayer) {
-            isWhitePlayerMove = !isWhitePlayerMove;
-        }
+
         TimeMeasurement.start();
         boolean isKingLost = isKingLost(isWhitePlayerMove, initialState);
         TimeMeasurement.stop(TimeMeasurement.Category.KING_LOSS_CHECK);
