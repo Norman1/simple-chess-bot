@@ -20,7 +20,7 @@ public class CompeteAgainstSelf {
         BoardState boardState = new BoardState();
         boardState.setupInitialBoard();
         BoardPrinter boardPrinter = new BoardPrinter();
-        boardPrinter.printBoard(boardState.getChessBoard());
+        boardPrinter.printBoard(boardState);
         for(int i = 0; i < MAX_TURNS; i++){
             System.out.println();
             System.out.println("=================");
@@ -33,7 +33,7 @@ public class CompeteAgainstSelf {
                 break;
             }
             System.out.println("Performing move "+bestMove.getT1());
-            boardPrinter.printBoard(bestMove.getT2().getChessBoard());
+            boardPrinter.printBoard(bestMove.getT2());
             boardState = bestMove.getT2();
         }
         TimeMeasurement.stop(TimeMeasurement.Category.ALL);

@@ -31,8 +31,15 @@ public class BoardState {
      * a11 is 0-0
      * first rows then columns
      */
-    private Piece[][] chessBoard;
+    private Piece[][] chessBoardX;
 
+    public Piece getPieceAt(int row, int column){
+        return chessBoardX[row][column];
+    }
+
+    public void setPieceAt(int row, int column, Piece piece){
+        chessBoardX[row][column] = piece;
+    }
 
 
     public void setupInitialBoard() {
@@ -46,7 +53,7 @@ public class BoardState {
                 {BLACK_ROOK, BLACK_KNIGHT, BLACK_BISHOP, BLACK_QUEEN, BLACK_KING, BLACK_BISHOP, BLACK_KNIGHT, BLACK_ROOK}};
 
         isWhitePlayerMove = true;
-        chessBoard = initialBoard;
+        chessBoardX = initialBoard;
     }
 
     public void nextMove(){
@@ -73,9 +80,9 @@ public class BoardState {
         // Cloning like that because Arrays.stream(chessBoard).map(Piece[]::clone).toArray(Piece[][]::new); has worse performance
         Piece[][] copyBoard = new Piece[8][];
         for(int i = 0; i < 8; i++){
-            copyBoard[i] = chessBoard[i].clone();
+            copyBoard[i] = chessBoardX[i].clone();
         }
-        copy.chessBoard = copyBoard;
+        copy.chessBoardX = copyBoard;
 
         TimeMeasurement.stop(TimeMeasurement.Category.CLONE_PIECE_ARRAY);
         TimeMeasurement.stop(TimeMeasurement.Category.COPY_BOARD);

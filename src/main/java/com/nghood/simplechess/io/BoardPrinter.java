@@ -5,13 +5,13 @@ import com.nghood.simplechess.model.Piece;
 
 public class BoardPrinter {
 
-    public void printBoard(Piece[][] pieces) {
+    public void printBoard(BoardState boardState) {
 
 
         for (int row = 7; row >= 0; row--) {
             System.out.print(row +1+"  ");
             for (int column = 0; column < 8; column++) {
-                System.out.print(getStringRepresentation(pieces[row][column])+"  ");
+                System.out.print(getStringRepresentation(boardState.getPieceAt(row,column))+"  ");
             }
             System.out.println();
 
@@ -70,6 +70,6 @@ public class BoardPrinter {
     public static void main(String[] args){
         BoardState boardState = new BoardState();
         boardState.setupInitialBoard();
-        new BoardPrinter().printBoard(boardState.getChessBoard());
+        new BoardPrinter().printBoard(boardState);
     }
 }

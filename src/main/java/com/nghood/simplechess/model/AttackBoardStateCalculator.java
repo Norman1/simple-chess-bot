@@ -28,7 +28,7 @@ public class AttackBoardStateCalculator {
             }
 
             // Special case: Capturing a pawn with en passant does not set any field under attack
-            if(isPawn && followupState.getT2() != followupState.getT4() && initialState.getChessBoard()[followupState.getT3()][followupState.getT4()]== null){
+            if(isPawn && followupState.getT2() != followupState.getT4() && initialState.getPieceAt(followupState.getT3(),followupState.getT4())== null){
                 continue;
             }
             attackBoardState.setFieldUnderAttack(followupState.getT3(),followupState.getT4(),followupState.getT5());

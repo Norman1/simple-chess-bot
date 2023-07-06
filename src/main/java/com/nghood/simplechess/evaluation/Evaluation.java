@@ -88,11 +88,11 @@ public class Evaluation {
     public static int getBoardValue(BoardState boardState){
         TimeMeasurement.start();
         int boardValue = 0;
-        Piece[][] board = boardState.getChessBoard();
+        //Piece[][] board = boardState.getChessBoard();
         for(int row = 0; row < 8; row++){
             for(int column =0; column < 8; column ++){
-                boardValue += getPieceValue(board[row][column]);
-                boardValue += getPositionValue(row,column,board[row][column]);
+                boardValue += getPieceValue(boardState.getPieceAt(row,column));
+                boardValue += getPositionValue(row,column, boardState.getPieceAt(row,column));
 
             }
         }

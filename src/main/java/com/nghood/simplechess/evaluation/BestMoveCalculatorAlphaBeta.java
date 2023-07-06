@@ -21,22 +21,12 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
     @Override
     public Tuple2<String, BoardState> calculateBestMove(BoardState initialState) {
         long startTime = System.currentTimeMillis();
-       // FollowupBoardStates opponentFollowup = new FollowupBoardStates(initialState, null, true);
-        //AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(initialState, opponentFollowup.getFollowupStates());
-        //FollowupBoardStates followupBoardStates = new FollowupBoardStates(initialState, opponentAttack, false);
-        //  var followupStates = followupBoardStates.getFollowupStates();
-        // int idx = minimax0(followupStates, initialState);
-
 
         AlphaBetaTree alphaBetaTree = new AlphaBetaTree();
 
 
         alphaBetaTree.setCurrentDepth(MAX_DEPTH);
 
-        // TODO debug, test if 6 depth helps
-//        if (!initialState.isWhitePlayerMove()) {
-//            alphaBetaTree.setCurrentDepth(MAX_DEPTH + 2);
-//        }
 
         alphaBetaTree.setCurrentState(initialState);
         alphaBetaTree.setAlpha(Integer.MIN_VALUE);
@@ -115,22 +105,22 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
             boolean isLastMoveCapture = followupState.getT3() == lastMovedPiece.getT1() && followupState.getT4() == lastMovedPiece.getT2();
             if (isLastMoveCapture) {
                 value += 1000000;
-                Piece capturingPiece = followupState.getT6().getChessBoard()[followupState.getT3()][followupState.getT4()];
+                Piece capturingPiece = followupState.getT6().getPieceAt(followupState.getT3(),followupState.getT4());
                 int capturingPieceValue = Evaluation.getAbsolutePieceValue(capturingPiece);
                 value -= capturingPieceValue;
             }
         }
 
         // Prio 2: captures
-        Piece previousPieceOnPosition = initialState.getChessBoard()[followupState.getT3()][followupState.getT4()];
-        Piece movingPiece = followupState.getT6().getChessBoard()[followupState.getT3()][followupState.getT4()];
+        Piece previousPieceOnPosition = initialState.getPieceAt(followupState.getT3(),followupState.getT4());
+        Piece movingPiece = followupState.getT6().getPieceAt(followupState.getT3(),followupState.getT4());
         int movingPieceValue = Evaluation.getAbsolutePieceValue(movingPiece);
         if (previousPieceOnPosition != null) {
             int capturedPieceValue = Evaluation.getAbsolutePieceValue(previousPieceOnPosition);
             value += 10 * capturedPieceValue;
             value -= movingPieceValue;
-            // Prio 3: non captures (TODO: prunes little branches and makes the bot even a tiny bit slower)
         }
+        // Prio 3: non captures
         int opponentAttackValue = attackBoardState.getAttackValue(followupState.getT3(), followupState.getT4());
         if (opponentAttackValue != -1) {
             value -= movingPieceValue;
@@ -146,12 +136,12 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return out;
     }
 
-    private boolean isKingTaken(Piece[][] board) {
+    private boolean isKingTaken(BoardState boardState) {
         int kingCount = 0;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                if (board[row][column] != null) {
-                    if (board[row][column] == Piece.WHITE_KING || board[row][column] == Piece.BLACK_KING) {
+                if (boardState.getPieceAt(row,column) != null) {
+                    if (boardState.getPieceAt(row,column) == Piece.WHITE_KING ||boardState.getPieceAt(row,column) == Piece.BLACK_KING) {
                         kingCount++;
                     }
                 }
@@ -165,7 +155,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         int pieceCount = 0;
         for (int row = 0; row < 8; row++) {
             for (int column = 0; column < 8; column++) {
-                if (boardState.getChessBoard()[row][column] != null) {
+                if (boardState.getPieceAt(row,column) != null) {
                     pieceCount++;
                 }
             }
@@ -173,11 +163,27 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         return pieceCount;
     }
 
-    // TODO mistake: since we are limiting the tree, we assume the players need to continue with a capture what is nonsense
 
-    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups, BoardState currentState) {
-        int pieceCount = countPieces(currentState);
-        return followups.stream().filter(followup -> countPieces(followup.getT6()) != pieceCount).collect(Collectors.toList());
+    public List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> getNonQuietFollowups(List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followups,AlphaBetaTree alphaBetaTree) {
+        int pieceCount = countPieces(alphaBetaTree.getCurrentState());
+
+        var nonQuietFollowups = followups.stream().filter(followup -> countPieces(followup.getT6()) != pieceCount).collect(Collectors.toList());
+        // remove followups where black or white gets a worse result than the guaranteed value
+ //       nonQuietFollowups =nonQuietFollowups.stream().filter( followup -> {
+//            int value = Evaluation.getBoardValue(followup.getT6());
+//            Integer guaranteedWhiteMinValue = alphaBetaTree.getGuaranteedWhiteMinValue();
+//            Integer guaranteedBlackMaxValue = alphaBetaTree.getGuaranteedBlackMaxValue();
+//            if (guaranteedWhiteMinValue != null && value > guaranteedWhiteMinValue) {
+//                return false;
+//            }
+//            else if (guaranteedBlackMaxValue != null && value < guaranteedBlackMaxValue) {
+//                return false;
+//            }
+//            return true;
+//        }).collect(Collectors.toList());
+
+
+        return nonQuietFollowups;
     }
 
     private int evaluatePosition(AlphaBetaTree alphaBetaTree) {
@@ -186,7 +192,7 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         Integer guaranteedBlackMaxValue = alphaBetaTree.getGuaranteedBlackMaxValue();
         if (guaranteedWhiteMinValue != null && currentStateValue < guaranteedWhiteMinValue) {
             return guaranteedWhiteMinValue;
-        } else if(guaranteedBlackMaxValue != null && currentStateValue > guaranteedBlackMaxValue){
+        } else if (guaranteedBlackMaxValue != null && currentStateValue > guaranteedBlackMaxValue) {
             return guaranteedBlackMaxValue;
         }
         return currentStateValue;
@@ -195,42 +201,32 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
     private void alphaBeta(AlphaBetaTree alphaBetaTree) {
         amountTraversedNodes++;
-        var opponentFollowup = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(),null,true);
-        //FollowupBoardStates opponentFollowup = new FollowupBoardStates(alphaBetaTree.getCurrentState(), null, true);
+        var opponentFollowup = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), null, true);
         AttackBoardState opponentAttack = new AttackBoardStateCalculator().calculateAttackBoardState(alphaBetaTree.getCurrentState(), opponentFollowup);
 
-      //  FollowupBoardStates followupBoardStates = new FollowupBoardStates(alphaBetaTree.getCurrentState(), opponentAttack, false);
-        var followupBoardStates = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(),opponentAttack,false);
+        var followupBoardStates = FollowupBoardStates.getFollowups(alphaBetaTree.getCurrentState(), opponentAttack, false);
         List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> followupStates = followupBoardStates;
 
         if (alphaBetaTree.getCurrentDepth() == 0) {
             int depth0Value = Evaluation.getBoardValue(alphaBetaTree.getCurrentState());
-            // wasWhiteTurn --> followup is black turn
+            // wasWhiteTurn --> followup is black turn (or not...)
             boolean wasWhiteTurn = alphaBetaTree.getCurrentState().isWhitePlayerMove();
             if (wasWhiteTurn) {
                 alphaBetaTree.setGuaranteedWhiteMinValue(depth0Value);
-               // alphaBetaTree.setGuaranteedBlackMaxValue(depth0Value);
             } else {
                 alphaBetaTree.setGuaranteedBlackMaxValue(depth0Value);
-               // alphaBetaTree.setGuaranteedWhiteMinValue(depth0Value);
             }
         }
 
 
-        if (isKingTaken(alphaBetaTree.getCurrentState().getChessBoard())) {
+        if (isKingTaken(alphaBetaTree.getCurrentState())) {
             alphaBetaTree.setTreeValue(evaluatePosition(alphaBetaTree));
             return;
         }
 
         if (alphaBetaTree.getCurrentDepth() <= 0) {
 
-
-
-            List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = new ArrayList<>();
-          //  if(alphaBetaTree.getCurrentDepth() > -5)
-         //   {
-                nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree.getCurrentState());
-          //  }
+            List<Tuple6<Integer, Integer, Integer, Integer, Piece, BoardState>> nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree);
 
             if (nonQuietFollowups.isEmpty()) {
                 alphaBetaTree.setTreeValue(evaluatePosition(alphaBetaTree));
