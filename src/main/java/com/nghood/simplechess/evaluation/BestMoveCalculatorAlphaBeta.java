@@ -14,7 +14,10 @@ import java.util.stream.Collectors;
 
 public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
-    private static final int MAX_DEPTH = 4;
+    private static final int BLACK_DEPTH = 5;
+    private static final int WHITE_DEPTH = 5;
+
+    private static boolean isWhiteCurrently = true;
     private int amountTraversedNodes = 0;
     private static int allTraversedNoded = 0;
 
@@ -24,8 +27,15 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
 
         AlphaBetaTree alphaBetaTree = new AlphaBetaTree();
 
+        if(initialState.isWhitePlayerMove()){
+            isWhiteCurrently = true;
+            alphaBetaTree.setCurrentDepth(WHITE_DEPTH);
+        }else{
+            isWhiteCurrently = true;
+          //  isWhiteCurrently = false;
+            alphaBetaTree.setCurrentDepth(BLACK_DEPTH);
+        }
 
-        alphaBetaTree.setCurrentDepth(MAX_DEPTH);
 
 
         alphaBetaTree.setCurrentState(initialState);
@@ -228,6 +238,9 @@ public class BestMoveCalculatorAlphaBeta implements BestMoveCalculation {
         if (alphaBetaTree.getCurrentDepth() <= 0) {
 
             List<FollowupBoardStates.Followup> nonQuietFollowups = getNonQuietFollowups(followupStates, alphaBetaTree);
+            if(isWhiteCurrently && alphaBetaTree.getCurrentDepth() == -2  || (!isWhiteCurrently && alphaBetaTree.getCurrentDepth() == -2)){
+                nonQuietFollowups.clear();
+            }
 
             if (nonQuietFollowups.isEmpty()) {
                 alphaBetaTree.setTreeValue(evaluatePosition(alphaBetaTree));

@@ -84,6 +84,17 @@ public class Evaluation {
             {-30,-40,-40,-50,-50,-40,-40,-30}
     };
 
+    private static final int[][] kingEndGamePositionValues = {
+            {-50,-30,-30,-30,-30,-30,-30,-50},
+            { -30,-30,  0,  0,  0,  0,-30,-30},
+            {-30,-10, 20, 30, 30, 20,-10,-30},
+            {-30,-10, 30, 40, 40, 30,-10,-30},
+            {-30,-10, 30, 40, 40, 30,-10,-30},
+            {-30,-10, 20, 30, 30, 20,-10,-30},
+            {-30,-20,-10,  0,  0,-10,-20,-30},
+            {-50,-40,-30,-20,-20,-30,-40,-50}
+    };
+
 
     public static int getBoardValue(BoardState boardState){
         TimeMeasurement.start();
@@ -92,7 +103,7 @@ public class Evaluation {
         for(int row = 0; row < 8; row++){
             for(int column =0; column < 8; column ++){
                 boardValue += getPieceValue(boardState.getPieceAt(row,column));
-                boardValue += getPositionValue(row,column, boardState.getPieceAt(row,column));
+                boardValue += getPositionValue(row,column, boardState.getPieceAt(row,column),boardState);
 
             }
         }
@@ -100,7 +111,7 @@ public class Evaluation {
         return boardValue;
     }
 
-    private static int getPositionValue(int row, int column,Piece piece){
+    private static int getPositionValue(int row, int column,Piece piece, BoardState boardState){
         if(piece == null){
             return 0;
         }
@@ -119,9 +130,11 @@ public class Evaluation {
             case WHITE_QUEEN:
                 return queenPositionValues[matrixRow][matrixColumn];
             case WHITE_KING:
+              // return getKingPositionValues(matrixColumn,matrixColumn,true,boardState);
                 return kingPositionValues[matrixRow][matrixColumn];
             case BLACK_KING:
-                return -kingPositionValues[matrixRow][matrixColumn];
+             //  return getKingPositionValues(matrixColumn,matrixColumn,false,boardState);
+               return -kingPositionValues[matrixRow][matrixColumn];
             case BLACK_PAWN:
                 return -pawnPositionValues[matrixRow][matrixColumn];
             case BLACK_ROOK:
@@ -134,6 +147,58 @@ public class Evaluation {
                 return -queenPositionValues[matrixRow][matrixColumn];
         }
         return -1;
+    }
+
+    private static int getKingPositionValues(int matrixColumn, int matrixRow, boolean isWhite,BoardState boardState){
+        if(isWhite){
+            if(isEndGame(boardState)){
+                return kingEndGamePositionValues[matrixRow][matrixColumn];
+            }else{
+                return kingPositionValues[matrixRow][matrixColumn];
+            }
+        }else{
+            if(isEndGame(boardState)){
+                return -kingEndGamePositionValues[matrixRow][matrixColumn];
+            }else{
+                return -kingPositionValues[matrixRow][matrixColumn];
+            }
+        }
+    }
+
+    private static boolean isEndGame(BoardState testState){
+
+
+        // minor piece = bishop, knight
+        int queenCountWhite = 0;
+        int minorPieceCountWhite = 0;
+        int queenCountBlack = 0;
+        int minorPieceCountBlack = 0;
+        for(int row = 0; row < 8; row++){
+            for(int column = 0; column < 8; column ++){
+                Piece piece = testState.getPieceAt(row,column);
+                if(piece == null){
+                    continue;
+                }
+                if(piece == Piece.WHITE_QUEEN){
+                    queenCountWhite++;
+                }else if(piece == Piece.BLACK_QUEEN){
+                    queenCountBlack++;
+                }else if(piece == Piece.WHITE_BISHOP || piece == Piece.WHITE_KNIGHT){
+                    minorPieceCountWhite++;
+                }else if(piece == Piece.BLACK_BISHOP || piece == Piece.BLACK_KNIGHT){
+                    minorPieceCountBlack++;
+                }
+            }
+        }
+        if(queenCountWhite == queenCountBlack && queenCountWhite == 0){
+            return true;
+        }
+        else if((queenCountWhite == 1 && minorPieceCountWhite <= 1) && (queenCountBlack == 1 && minorPieceCountBlack < 1)){
+            return true;
+        }
+
+
+        return false;
     }
 
     public static int getAbsolutePieceValue(Piece piece){
